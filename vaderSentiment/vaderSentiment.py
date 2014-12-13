@@ -103,7 +103,7 @@ def wildCardMatch(patternWithWildcard, listOfStringsToMatchAgainst):
 def isALLCAP_differential(wordList):
     countALLCAPS= 0
     for w in wordList:
-        if str(w).isupper():
+        if w.isupper():
             countALLCAPS += 1
     cap_differential = len(wordList) - countALLCAPS
     if cap_differential > 0 and cap_differential < len(wordList):
@@ -178,11 +178,11 @@ def sentiment(text):
     for item in wordsAndEmoticons:
         v = 0
         i = wordsAndEmoticons.index(item)
-        if (i < len(wordsAndEmoticons)-1 and str(item).lower() == "kind" and \
+        if (i < len(wordsAndEmoticons)-1 and item.lower() == "kind" and \
            wordsAndEmoticons[i+1].lower() == "of") or item.lower() in BOOSTER_DICT:
             sentiments.append(v)
             continue
-        item_lowercase = str(item).lower() 
+        item_lowercase = item.lower()
         if item_lowercase in WORD_VALENCE_DICT:
             #get the sentiment valence
             v = float(WORD_VALENCE_DICT[item_lowercase])
@@ -224,11 +224,12 @@ def sentiment(text):
                 # future work: consider other sentiment-laden idioms
                 #other_idioms = {"back handed": -2, "blow smoke": -2, "blowing smoke": -2, "upper hand": 1, "break a leg": 2, 
                 #                "cooking with gas": 2, "in the black": 2, "in the red": -2, "on the ball": 2,"under the weather": -2}
-                onezero = "{} {}".format(str(wordsAndEmoticons[i-1]), str(wordsAndEmoticons[i]))
-                twoonezero = "{} {} {}".format(str(wordsAndEmoticons[i-2]), str(wordsAndEmoticons[i-1]), str(wordsAndEmoticons[i]))
-                twoone = "{} {}".format(str(wordsAndEmoticons[i-2]), str(wordsAndEmoticons[i-1]))
-                threetwoone = "{} {} {}".format(str(wordsAndEmoticons[i-3]), str(wordsAndEmoticons[i-2]), str(wordsAndEmoticons[i-1]))
-                threetwo = "{} {}".format(str(wordsAndEmoticons[i-3]), str(wordsAndEmoticons[i-2]))                    
+            
+                onezero = u"{} {}".format(wordsAndEmoticons[i-1], wordsAndEmoticons[i])
+                twoonezero = u"{} {} {}".format(wordsAndEmoticons[i-2], wordsAndEmoticons[i-1], wordsAndEmoticons[i])
+                twoone = u"{} {}".format(wordsAndEmoticons[i-2], wordsAndEmoticons[i-1])
+                threetwoone = u"{} {} {}".format(wordsAndEmoticons[i-3], wordsAndEmoticons[i-2], wordsAndEmoticons[i-1])
+                threetwo = u"{} {}".format(wordsAndEmoticons[i-3], wordsAndEmoticons[i-2])
                 if onezero in SPECIAL_CASE_IDIOMS:
                     v = SPECIAL_CASE_IDIOMS[onezero]
                 elif twoonezero in SPECIAL_CASE_IDIOMS:
@@ -240,11 +241,11 @@ def sentiment(text):
                 elif threetwo in SPECIAL_CASE_IDIOMS:
                     v = SPECIAL_CASE_IDIOMS[threetwo]
                 if len(wordsAndEmoticons)-1 > i:
-                    zeroone = "{} {}".format(wordsAndEmoticons[i], wordsAndEmoticons[i+1])
+                    zeroone = u"{} {}".format(wordsAndEmoticons[i], wordsAndEmoticons[i+1])
                     if zeroone in SPECIAL_CASE_IDIOMS:
                         v = SPECIAL_CASE_IDIOMS[zeroone]
                 if len(wordsAndEmoticons)-1 > i+1:
-                    zeroonetwo = "{} {}".format(wordsAndEmoticons[i], wordsAndEmoticons[i+1], wordsAndEmoticons[i+2])
+                    zeroonetwo = u"{} {}".format(wordsAndEmoticons[i], wordsAndEmoticons[i+1], wordsAndEmoticons[i+2])
                     if zeroonetwo in SPECIAL_CASE_IDIOMS:
                         v = SPECIAL_CASE_IDIOMS[zeroonetwo]
                 
@@ -253,12 +254,12 @@ def sentiment(text):
                     v = v+B_DECR
             
             # check for negation case using "least"
-            if i > 1 and str(wordsAndEmoticons[i-1]).lower() not in WORD_VALENCE_DICT \
-                and str(wordsAndEmoticons[i-1]).lower() == "least":
-                if (str(wordsAndEmoticons[i-2]).lower() != "at" and str(wordsAndEmoticons[i-2]).lower() != "very"):
+            if i > 1 and wordsAndEmoticons[i-1].lower() not in WORD_VALENCE_DICT \
+                and wordsAndEmoticons[i-1].lower() == "least":
+                if (wordsAndEmoticons[i-2].lower() != "at" and wordsAndEmoticons[i-2].lower() != "very"):
                     v = v*n_scalar
-            elif i > 0 and str(wordsAndEmoticons[i-1]).lower() not in WORD_VALENCE_DICT \
-                and str(wordsAndEmoticons[i-1]).lower() == "least":
+            elif i > 0 and wordsAndEmoticons[i-1].lower() not in WORD_VALENCE_DICT \
+                and wordsAndEmoticons[i-1].lower() == "least":
                 v = v*n_scalar
         sentiments.append(v) 
             
@@ -280,14 +281,14 @@ def sentiment(text):
         #print sentiments, sum_s
         
         # check for added emphasis resulting from exclamation points (up to 4 of them)
-        ep_count = str(text).count("!")
+        ep_count = text.count("!")
         if ep_count > 4: ep_count = 4
         ep_amplifier = ep_count*0.292 #(empirically derived mean sentiment intensity rating increase for exclamation points)
         if sum_s > 0:  sum_s += ep_amplifier
         elif  sum_s < 0: sum_s -= ep_amplifier
         
         # check for added emphasis resulting from question marks (2 or 3+)
-        qm_count = str(text).count("?")
+        qm_count = text.count("?")
         qm_amplifier = 0
         if qm_count > 1:
             if qm_count <= 3: qm_amplifier = qm_count*0.18
@@ -330,23 +331,23 @@ def sentiment(text):
 if __name__ == '__main__':
     # --- examples -------
     sentences = [
-                "VADER is smart, handsome, and funny.",       # positive sentence example
-                "VADER is smart, handsome, and funny!",       # punctuation emphasis handled correctly (sentiment intensity adjusted)
-                "VADER is very smart, handsome, and funny.",  # booster words handled correctly (sentiment intensity adjusted)
-                "VADER is VERY SMART, handsome, and FUNNY.",  # emphasis for ALLCAPS handled
-                "VADER is VERY SMART, handsome, and FUNNY!!!",# combination of signals - VADER appropriately adjusts intensity
-                "VADER is VERY SMART, really handsome, and INCREDIBLY FUNNY!!!",# booster words & punctuation make this close to ceiling for score
-                "The book was good.",         # positive sentence
-                "The book was kind of good.", # qualified positive sentence is handled correctly (intensity adjusted)
-                "The plot was good, but the characters are uncompelling and the dialog is not great.", # mixed negation sentence
-                "A really bad, horrible book.",       # negative sentence with booster words
-                "At least it isn't a horrible book.", # negated negative sentence with contraction
-                ":) and :D",     # emoticons handled
-                "",              # an empty string is correctly handled
-                "Today sux",     #  negative slang handled
-                "Today sux!",    #  negative slang with punctuation emphasis handled
-                "Today SUX!",    #  negative slang with capitalization emphasis
-                "Today kinda sux! But I'll get by, lol" # mixed sentiment example with slang and constrastive conjunction "but"
+                u"VADER is smart, handsome, and funny.",       # positive sentence example
+                u"VADER is smart, handsome, and funny!",       # punctuation emphasis handled correctly (sentiment intensity adjusted)
+                u"VADER is very smart, handsome, and funny.",  # booster words handled correctly (sentiment intensity adjusted)
+                u"VADER is VERY SMART, handsome, and FUNNY.",  # emphasis for ALLCAPS handled
+                u"VADER is VERY SMART, handsome, and FUNNY!!!",# combination of signals - VADER appropriately adjusts intensity
+                u"VADER is VERY SMART, really handsome, and INCREDIBLY FUNNY!!!",# booster words & punctuation make this close to ceiling for score
+                u"The book was good.",         # positive sentence
+                u"The book was kind of good.", # qualified positive sentence is handled correctly (intensity adjusted)
+                u"The plot was good, but the characters are uncompelling and the dialog is not great.", # mixed negation sentence
+                u"A really bad, horrible book.",       # negative sentence with booster words
+                u"At least it isn't a horrible book.", # negated negative sentence with contraction
+                u":) and :D",     # emoticons handled
+                u"",              # an empty string is correctly handled
+                u"Today sux",     #  negative slang handled
+                u"Today sux!",    #  negative slang with punctuation emphasis handled
+                u"Today SUX!",    #  negative slang with capitalization emphasis
+                u"Today kinda sux! But I'll get by, lol" # mixed sentiment example with slang and constrastive conjunction "but"
                  ]
     paragraph = "It was one of the worst movies I've seen, despite good reviews. \
     Unbelievably bad acting!! Poor direction. VERY poor production. \
