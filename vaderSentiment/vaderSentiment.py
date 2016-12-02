@@ -20,7 +20,7 @@ import os, math, re, sys, fnmatch, string
 reload(sys)
 
 def make_lex_dict(f):
-    return dict(map(lambda (w, m): (w, float(m)), [wmsr.strip().split('\t')[0:2] for wmsr in open(f) ]))
+    return dict(map(lambda w, m: (w, float(m)), [wmsr.strip().split('\t')[0:2] for wmsr in open(f) ]))
     
 f = 'vader_sentiment_lexicon.txt' # empirically derived valence ratings for words, emoticons, slang, swear words, acronyms/initialisms
 try:
