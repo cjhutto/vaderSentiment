@@ -437,8 +437,8 @@ if __name__ == '__main__':
     ]
     sentences.extend(tricky_sentences)
     for sentence in sentences:
-        print(sentence),
+        print('{}'.format(sentence))
         ss = sentiment(sentence)
-        print "\t" + str(ss)
+        print('\t{}'.format(ss))
 
     print "\n\n Done!"
