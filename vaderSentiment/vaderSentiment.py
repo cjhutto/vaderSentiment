@@ -22,20 +22,24 @@ import re
 import sys
 import fnmatch
 import string
-reload(sys)
 
 
 def make_lex_dict(f):
-    return dict(map(lambda w, m: (w, float(m)), [wmsr.strip().split('\t')[0:2] for wmsr in open(f)]))
+    result = {}
+    fh = open(f, 'r', encoding='latin1')
+    for line in fh:
+        l = line.strip().split('\t')[0:2]
+        result[l[0]] = l[1]
+    return result
 
 # empirically derived valence ratings for words, emoticons, slang, swear
 # words, acronyms/initialisms
 f = 'vader_sentiment_lexicon.txt'
 try:
-    WORD_VALENCE_DICT = make_lex_dict(f)
+    word_valence_dict = make_lex_dict(f)
 except:
-    f = os.path.join(os.path.dirname(__file__), 'vader_sentiment_lexicon.txt')
-    WORD_VALENCE_DICT = make_lex_dict(f)
+    f = os.path.join(os.path.dirname(full_path), 'vader_sentiment_lexicon.txt')
+    word_valence_dict = make_lex_dict(f)
 
 
 ##CONSTANTS#####
@@ -151,7 +155,7 @@ def sentiment(text):
     Returns a float for sentiment strength based on the input text.
     Positive values are positive valence, negative value are negative valence.
     """
-    if not isinstance(text, unicode) and not isinstance(text, str):
+    if not isinstance(text, str):
         text = str(text)
 
     # doesn't separate words from adjacent punctuation (keeps emoticons &
