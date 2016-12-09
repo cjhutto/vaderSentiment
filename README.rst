@@ -9,35 +9,34 @@ Introduction
 
 This README file describes the dataset of the paper:
 
-|  **VADER: A Parsimonious Rule-based Model for Sentiment Analysis of Social Media Text**
-|  (by C.J. Hutto and Eric Gilbert) 
-|  Eighth International Conference on Weblogs and Social Media (ICWSM-14). Ann Arbor, MI, June 2014. 
+	|  **VADER: A Parsimonious Rule-based Model for Sentiment Analysis of Social Media Text**
+	|  (by C.J. Hutto and Eric Gilbert) 
+	|  Eighth International Conference on Weblogs and Social Media (ICWSM-14). Ann Arbor, MI, June 2014. 
  
 For questions, please contact: 
-
-C.J. Hutto 
-Georgia Institute of Technology, Atlanta, GA 30032  
-cjhutto [at] gatech [dot] edu 
+	| C.J. Hutto 
+	| Georgia Institute of Technology, Atlanta, GA 30032  
+	| cjhutto [at] gatech [dot] edu 
   
 ====================================
 Citation Information
 ====================================
 
-If you use either the dataset or any of the VADER sentiment analysis tools (VADER sentiment lexicon or Python code for rule-based sentiment analysis engine) in your research, please cite the above paper. For example:  <br />
+If you use either the dataset or any of the VADER sentiment analysis tools (VADER sentiment lexicon or Python code for rule-based sentiment analysis engine) in your research, please cite the above paper. For example:  
 
-  <small> **Hutto, C.J. & Gilbert, E.E. (2014). VADER: A Parsimonious Rule-based Model for Sentiment Analysis of Social Media Text. Eighth International Conference on Weblogs and Social Media (ICWSM-14). Ann Arbor, MI, June 2014.** </small><br />
+  **Hutto, C.J. & Gilbert, E.E. (2014). VADER: A Parsimonious Rule-based Model for Sentiment Analysis of Social Media Text. Eighth International Conference on Weblogs and Social Media (ICWSM-14). Ann Arbor, MI, June 2014.** 
 
 ====================================
 Installation
 ====================================
 
 There are a couple of ways to install and use VADER sentiment:  
-# The simplest is to use the command line to do an installtion from PyPI using pip, e.g., 
+#. The simplest is to use the command line to do an installation from PyPI using pip, e.g., 
 ``
 > pip install vaderSentiment
 ``
-# You could also clone the [GitHub repository](https://github.com/cjhutto/vaderSentiment) (HTTPS clone URL: https://github.com/cjhutto/vaderSentiment.git)
-# You could simply download either the `Link [full master branch zip file]<https://github.com/cjhutto/vaderSentiment/archive/master.zip>`_ , or the `Link [public release source code]<https://github.com/cjhutto/vaderSentiment/releases/tag/0.5>`_ as a `Link [compressed .zip file]<https://github.com/cjhutto/vaderSentiment/archive/0.5.zip>`_ or `Link [tarball .tar.gz file]<https://github.com/cjhutto/vaderSentiment/archive/0.5.tar.gz>`_ 
+#. You could also clone the [GitHub repository](https://github.com/cjhutto/vaderSentiment) (HTTPS clone URL: https://github.com/cjhutto/vaderSentiment.git)
+#. You could simply download either the `Link [full master branch zip file]<https://github.com/cjhutto/vaderSentiment/archive/master.zip>`_ , or the `Link [public release source code]<https://github.com/cjhutto/vaderSentiment/releases/tag/0.5>`_ as a `Link [compressed .zip file]<https://github.com/cjhutto/vaderSentiment/archive/0.5.zip>`_ or `Link [tarball .tar.gz file]<https://github.com/cjhutto/vaderSentiment/archive/0.5.tar.gz>`_ 
 
 
 ====================================
