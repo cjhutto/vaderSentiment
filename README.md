@@ -166,6 +166,7 @@ The compressed .tar.gz package includes **PRIMARY RESOURCES** (items 1-3) as wel
         vs = analyzer.polarity_scores(sentence)
         print("{:-<65} {}".format(sentence, str(vs)))
 ```
+**[For a more complete demo, run `python vaderSentiment.py`]**
 =======
 ###--- Output for the above example code ---
 ```
@@ -184,6 +185,7 @@ Make sure you :) or :D today!------------------------------------ {'neg': 0.0, '
 Today SUX!------------------------------------------------------- {'neg': 0.779, 'neu': 0.221, 'pos': 0.0, 'compound': -0.5461}
 Today only kinda sux! But I'll get by, lol----------------------- {'neg': 0.179, 'neu': 0.569, 'pos': 0.251, 'compound': 0.2228}
 ```
+**[For a more complete demo, run `python vaderSentiment.py`]**
 =======
 ###--- About the scoring ---
 - The `compound` score is computed by summing the valence scores of each word in the lexicon, adjusted 
