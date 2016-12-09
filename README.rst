@@ -54,9 +54,11 @@ The package here includes **PRIMARY RESOURCES** (items 1-3) as well as additiona
     Manually creating (much less, validating) a comprehensive sentiment lexicon is a labor intensive and sometimes error prone process, so it is no wonder that many opinion mining researchers and practitioners rely so heavily on existing lexicons as primary resources. We are pleased to offer ours as a new resource.
 	
     We begin by constructing a list inspired by examining existing well-established sentiment word-banks (LIWC, ANEW, and GI). To this, we next incorporate numerous lexical features common to sentiment expression in microblogs, including:
+	
     * a full list of Western-style emoticons, for example, :-) denotes a smiley face and generally indicates positive sentiment
     * sentiment-related acronyms and initialisms (e.g., LOL and WTF are both examples of sentiment-laden initialisms)
     * commonly used slang with sentiment value (e.g., nah, meh and giggly). 
+	
 	
     This process provided us with over 9,000 lexical feature candidates. Next, we assessed the general applicability of each feature candidate to sentiment expressions. We used a wisdom-of-the-crowd13 (WotC) approach (Surowiecki, 2004) to acquire a valid point estimate for the sentiment valence (intensity) of each context-free candidate feature. We collected intensity ratings on each of our candidate lexical features from ten independent human raters (for a total of 90,000+ ratings). Features were rated on a scale from "[–4] Extremely Negative" to "[4] Extremely Positive", with allowance for "[0] Neutral (or Neither, N/A)".
 	
@@ -64,9 +66,11 @@ The package here includes **PRIMARY RESOURCES** (items 1-3) as well as additiona
 
 #. vaderSentiment.py
     The Python code for the rule-based sentiment analysis engine. Implements the grammatical and syntactical rules described in the paper, incorporating empirically derived quantifications for the impact of each rule on the perceived intensity of sentiment in sentence-level text. Importantly, these heuristics go beyond what would normally be captured in a typical bag-of-words model. They incorporate **word-order sensitive relationships** between terms. For example, degree modifiers (also called intensifiers, booster words, or degree adverbs) impact sentiment intensity by either increasing or decreasing the intensity. Consider these examples:
+	
     (a) "The service here is extremely good" 
     (b) "The service here is good" 
     (c) "The service here is marginally good" 
+	
 	
     From Table 3 in the paper, we see that for 95% of the data, using a degree modifier increases the positive sentiment intensity of example (a) by 0.227 to 0.36, with a mean difference of 0.293 on a rating scale from 1 to 4. Likewise, example (c) reduces the perceived sentiment intensity by 0.293, on average.
 
