@@ -7,7 +7,7 @@ setup(
   version = '2.0',
   description = 'VADER Sentiment Analysis. VADER (Valence Aware Dictionary and sEntiment Reasoner) is a lexicon and rule-based sentiment analysis tool that is specifically attuned to sentiments expressed in social media, and works well on texts from other domains.',
   author = 'C.J. Hutto',
-  author_email = 'cjhutto [at] gatech [dot] edu',
+  author_email = 'cjhutto@gatech.edu',
   license = 'MIT License: http://opensource.org/licenses/MIT',
   url = 'https://github.com/cjhutto/vaderSentiment', # use the URL to the github repo
   download_url = 'https://github.com/cjhutto/vaderSentiment/archive/master.zip', 
