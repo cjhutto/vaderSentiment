@@ -1,11 +1,11 @@
-## VADER-Sentiment-Analysis
-========================
+VADER-Sentiment-Analysis
+====================================
 
 VADER (Valence Aware Dictionary and sEntiment Reasoner) is a lexicon and rule-based sentiment analysis tool that is _specifically attuned to sentiments expressed in social media_. It is fully open-sourced under the [MIT License](http://choosealicense.com/) (we sincerely appreciate all attributions and readily accept most contributions, but please don't hold us liable).
 
-=======
-
-###Introduction
+====================================
+Introduction
+====================================
 
 This README file describes the dataset of the paper:
 
@@ -19,29 +19,30 @@ C.J. Hutto <br />
 Georgia Institute of Technology, Atlanta, GA 30032  <br />
 cjhutto [at] gatech [dot] edu <br />
   
-=======
-
-###Citation Information
+====================================
+Citation Information
+====================================
 
 If you use either the dataset or any of the VADER sentiment analysis tools (VADER sentiment lexicon or Python code for rule-based sentiment analysis engine) in your research, please cite the above paper. For example:  <br />
 
   > <small> **Hutto, C.J. & Gilbert, E.E. (2014). VADER: A Parsimonious Rule-based Model for Sentiment Analysis of Social Media Text. Eighth International Conference on Weblogs and Social Media (ICWSM-14). Ann Arbor, MI, June 2014.** </small><br />
 
-=======
-
-###Installation
+====================================
+Installation
+====================================
 
 There are a couple of ways to install and use VADER sentiment:  <br />
 - The simplest is to use the command line to do an installtion from PyPI using pip, e.g., 
-```
+``
 > pip install vaderSentiment
-```
+``
 - You could also clone the [GitHub repository](https://github.com/cjhutto/vaderSentiment) (HTTPS clone URL: https://github.com/cjhutto/vaderSentiment.git)
 - You could simply download either the [full master branch zip file](https://github.com/cjhutto/vaderSentiment/archive/master.zip) , or the [public release source code](https://github.com/cjhutto/vaderSentiment/releases/tag/0.5) as a [compressed .zip file](https://github.com/cjhutto/vaderSentiment/archive/0.5.zip) or [tarball .tar.gz file](https://github.com/cjhutto/vaderSentiment/archive/0.5.tar.gz)
 
-=======
 
-###Resources and Dataset Descriptions
+====================================
+Resources and Dataset Descriptions
+====================================
 
 The compressed .tar.gz package includes **PRIMARY RESOURCES** (items 1-3) as well as additional **DATASETS AND TESTING RESOURCES** (items 4-12):
 
@@ -136,10 +137,11 @@ The compressed .tar.gz package includes **PRIMARY RESOURCES** (items 1-3) as wel
 	 [Comp.Social](http://comp.social.gatech.edu/papers/)
 
 
-=======
+====================================
+Python Code EXAMPLE:
+====================================
 **[For a more complete demo, run `python vaderSentiment.py`]**
-##Python Code EXAMPLE:
-```
+``
 	from vaderSentiment import SentimentIntensityAnalyzer
 	#note: depending on how you installed (e.g., using source code download versus pip install), you may need to import like this:
 	#from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
@@ -165,11 +167,13 @@ The compressed .tar.gz package includes **PRIMARY RESOURCES** (items 1-3) as wel
     for sentence in sentences:
         vs = analyzer.polarity_scores(sentence)
         print("{:-<65} {}".format(sentence, str(vs)))
-```
+``
 **[For a more complete demo, run `python vaderSentiment.py`]**
 
-=======
-###--- Output for the above example code ---
+====================================
+Output for the above example code
+====================================
+
 ```
 VADER is smart, handsome, and funny.----------------------------- {'neg': 0.0, 'neu': 0.254, 'pos': 0.746, 'compound': 0.8316}
 VADER is not smart, handsome, nor funny.------------------------- {'neg': 0.646, 'neu': 0.354, 'pos': 0.0, 'compound': -0.7424}
@@ -186,10 +190,12 @@ Make sure you :) or :D today!------------------------------------ {'neg': 0.0, '
 Today SUX!------------------------------------------------------- {'neg': 0.779, 'neu': 0.221, 'pos': 0.0, 'compound': -0.5461}
 Today only kinda sux! But I'll get by, lol----------------------- {'neg': 0.179, 'neu': 0.569, 'pos': 0.251, 'compound': 0.2228}
 ```
+
 **[For a more complete demo, run `python vaderSentiment.py`]**
 
-=======
-###--- About the scoring ---
+====================================
+About the scoring
+====================================
 - The `compound` score is computed by summing the valence scores of each word in the lexicon, adjusted 
 	 according to the rules, and then normalized to be between -1 (most extreme negative) and +1 (most extreme positive). 
 	 This is the most useful metric if you want a single unidimensional measure of sentiment for a given sentence.  
