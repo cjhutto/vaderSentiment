@@ -66,9 +66,9 @@ The package here includes **PRIMARY RESOURCES** (items 1-3) as well as additiona
 #. vaderSentiment.py
     The Python code for the rule-based sentiment analysis engine. Implements the grammatical and syntactical rules described in the paper, incorporating empirically derived quantifications for the impact of each rule on the perceived intensity of sentiment in sentence-level text. Importantly, these heuristics go beyond what would normally be captured in a typical bag-of-words model. They incorporate **word-order sensitive relationships** between terms. For example, degree modifiers (also called intensifiers, booster words, or degree adverbs) impact sentiment intensity by either increasing or decreasing the intensity. Consider these examples:
 	
-    * (a) "The service here is extremely good" 
-    * (b) "The service here is good" 
-    * (c) "The service here is marginally good" 
+    (a) "The service here is extremely good" 
+    (b) "The service here is good" 
+    (c) "The service here is marginally good" 
 	
     From Table 3 in the paper, we see that for 95% of the data, using a degree modifier increases the positive sentiment intensity of example (a) by 0.227 to 0.36, with a mean difference of 0.293 on a rating scale from 1 to 4. Likewise, example (c) reduces the perceived sentiment intensity by 0.293, on average.
 
@@ -113,7 +113,7 @@ The package here includes **PRIMARY RESOURCES** (items 1-3) as well as additiona
     DESCRIPTION: Sentiment ratings from a minimum of 20 independent human raters (all pre-screened, trained, and quality checked for optimal inter-rater reliability).
 
 
-#. Comp.Social website with more papers/research: <br />
+#. Comp.Social website with more papers/research: 
     [Comp.Social](http://comp.social.gatech.edu/papers/)
 
 
@@ -121,7 +121,7 @@ The package here includes **PRIMARY RESOURCES** (items 1-3) as well as additiona
 Python Code EXAMPLE:
 ====================================
 
-**[For a more complete demo, run `python vaderSentiment.py`]**
+**[For a more complete demo, run ``python vaderSentiment.py``]**
 
 ::
 
@@ -152,7 +152,7 @@ Python Code EXAMPLE:
         print("{:-<65} {}".format(sentence, str(vs)))
 
 
-**[For a more complete demo, run `python vaderSentiment.py`]**
+**[For a more complete demo, run ``python vaderSentiment.py``]**
 
 ====================================
 Output for the above example code
@@ -176,7 +176,7 @@ Output for the above example code
 	Today only kinda sux! But I'll get by, lol----------------------- {'neg': 0.179, 'neu': 0.569, 'pos': 0.251, 'compound': 0.2228}
 
 
-**[For a more complete demo, run `python vaderSentiment.py`]**
+**[For a more complete demo, run ``python vaderSentiment.py``]**
 
 ====================================
 About the scoring
