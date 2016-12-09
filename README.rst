@@ -121,7 +121,7 @@ The package here includes **PRIMARY RESOURCES** (items 1-3) as well as additiona
 Python Code EXAMPLE:
 ====================================
 
-**[For a more complete demo, run ``python vaderSentiment.py``]**
+** For a more complete demo, run ``python vaderSentiment.py`` **
 
 ::
 
@@ -152,7 +152,7 @@ Python Code EXAMPLE:
         print("{:-<65} {}".format(sentence, str(vs)))
 
 
-**[For a more complete demo, run ``python vaderSentiment.py``]**
+** For a more complete demo, run ``python vaderSentiment.py`` **
 
 ====================================
 Output for the above example code
@@ -176,7 +176,7 @@ Output for the above example code
 	Today only kinda sux! But I'll get by, lol----------------------- {'neg': 0.179, 'neu': 0.569, 'pos': 0.251, 'compound': 0.2228}
 
 
-**[For a more complete demo, run ``python vaderSentiment.py``]**
+** For a more complete demo, run ``python vaderSentiment.py`` **
 
 ====================================
 About the scoring
