@@ -1,7 +1,7 @@
 VADER-Sentiment-Analysis
 ====================================
 
-VADER (Valence Aware Dictionary and sEntiment Reasoner) is a lexicon and rule-based sentiment analysis tool that is _specifically attuned to sentiments expressed in social media_. It is fully open-sourced under the [MIT License](http://choosealicense.com/) (we sincerely appreciate all attributions and readily accept most contributions, but please don't hold us liable).
+VADER (Valence Aware Dictionary and sEntiment Reasoner) is a lexicon and rule-based sentiment analysis tool that is *specifically attuned to sentiments expressed in social media*. It is fully open-sourced under the `Link [MIT License]<http://choosealicense.com/>`_ (we sincerely appreciate all attributions and readily accept most contributions, but please don't hold us liable).
 
 ====================================
 Introduction
@@ -9,15 +9,15 @@ Introduction
 
 This README file describes the dataset of the paper:
 
-  **VADER: A Parsimonious Rule-based Model for Sentiment Analysis of Social Media Text** <br />
-  (by C.J. Hutto and Eric Gilbert) <br />
-  Eighth International Conference on Weblogs and Social Media (ICWSM-14). Ann Arbor, MI, June 2014. <br />
+  |**VADER: A Parsimonious Rule-based Model for Sentiment Analysis of Social Media Text**
+  |(by C.J. Hutto and Eric Gilbert) <br />
+  |Eighth International Conference on Weblogs and Social Media (ICWSM-14). Ann Arbor, MI, June 2014. 
  
-For questions, please contact: <br />
+For questions, please contact: 
 
-C.J. Hutto <br />
-Georgia Institute of Technology, Atlanta, GA 30032  <br />
-cjhutto [at] gatech [dot] edu <br />
+C.J. Hutto 
+Georgia Institute of Technology, Atlanta, GA 30032  
+cjhutto [at] gatech [dot] edu 
   
 ====================================
 Citation Information
@@ -25,19 +25,19 @@ Citation Information
 
 If you use either the dataset or any of the VADER sentiment analysis tools (VADER sentiment lexicon or Python code for rule-based sentiment analysis engine) in your research, please cite the above paper. For example:  <br />
 
-  > <small> **Hutto, C.J. & Gilbert, E.E. (2014). VADER: A Parsimonious Rule-based Model for Sentiment Analysis of Social Media Text. Eighth International Conference on Weblogs and Social Media (ICWSM-14). Ann Arbor, MI, June 2014.** </small><br />
+  <small> **Hutto, C.J. & Gilbert, E.E. (2014). VADER: A Parsimonious Rule-based Model for Sentiment Analysis of Social Media Text. Eighth International Conference on Weblogs and Social Media (ICWSM-14). Ann Arbor, MI, June 2014.** </small><br />
 
 ====================================
 Installation
 ====================================
 
-There are a couple of ways to install and use VADER sentiment:  <br />
-- The simplest is to use the command line to do an installtion from PyPI using pip, e.g., 
+There are a couple of ways to install and use VADER sentiment:  
+# The simplest is to use the command line to do an installtion from PyPI using pip, e.g., 
 ``
 > pip install vaderSentiment
 ``
-- You could also clone the [GitHub repository](https://github.com/cjhutto/vaderSentiment) (HTTPS clone URL: https://github.com/cjhutto/vaderSentiment.git)
-- You could simply download either the [full master branch zip file](https://github.com/cjhutto/vaderSentiment/archive/master.zip) , or the [public release source code](https://github.com/cjhutto/vaderSentiment/releases/tag/0.5) as a [compressed .zip file](https://github.com/cjhutto/vaderSentiment/archive/0.5.zip) or [tarball .tar.gz file](https://github.com/cjhutto/vaderSentiment/archive/0.5.tar.gz)
+# You could also clone the [GitHub repository](https://github.com/cjhutto/vaderSentiment) (HTTPS clone URL: https://github.com/cjhutto/vaderSentiment.git)
+# You could simply download either the `Link [full master branch zip file]<https://github.com/cjhutto/vaderSentiment/archive/master.zip>`_ , or the `Link [public release source code]<https://github.com/cjhutto/vaderSentiment/releases/tag/0.5>`_ as a `Link [compressed .zip file]<https://github.com/cjhutto/vaderSentiment/archive/0.5.zip>`_ or `Link [tarball .tar.gz file]<https://github.com/cjhutto/vaderSentiment/archive/0.5.tar.gz>`_ 
 
 
 ====================================
