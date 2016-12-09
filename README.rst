@@ -53,8 +53,7 @@ The package here includes **PRIMARY RESOURCES** (items 1-3) as well as additiona
 	
     Manually creating (much less, validating) a comprehensive sentiment lexicon is a labor intensive and sometimes error prone process, so it is no wonder that many opinion mining researchers and practitioners rely so heavily on existing lexicons as primary resources. We are pleased to offer ours as a new resource.
 	
-    We begin by constructing a list inspired by examining existing well-established sentiment word-banks (LIWC, ANEW, and GI). To this, we next incorporate numerous lexical features common to sentiment expression in microblogs, including
-	
+    We begin by constructing a list inspired by examining existing well-established sentiment word-banks (LIWC, ANEW, and GI). To this, we next incorporate numerous lexical features common to sentiment expression in microblogs, including:
     * a full list of Western-style emoticons, for example, :-) denotes a smiley face and generally indicates positive sentiment
     * sentiment-related acronyms and initialisms (e.g., LOL and WTF are both examples of sentiment-laden initialisms)
     * commonly used slang with sentiment value (e.g., nah, meh and giggly). 
@@ -65,7 +64,6 @@ The package here includes **PRIMARY RESOURCES** (items 1-3) as well as additiona
 
 #. vaderSentiment.py
     The Python code for the rule-based sentiment analysis engine. Implements the grammatical and syntactical rules described in the paper, incorporating empirically derived quantifications for the impact of each rule on the perceived intensity of sentiment in sentence-level text. Importantly, these heuristics go beyond what would normally be captured in a typical bag-of-words model. They incorporate **word-order sensitive relationships** between terms. For example, degree modifiers (also called intensifiers, booster words, or degree adverbs) impact sentiment intensity by either increasing or decreasing the intensity. Consider these examples:
-	
     (a) "The service here is extremely good" 
     (b) "The service here is good" 
     (c) "The service here is marginally good" 
