@@ -167,6 +167,7 @@ The compressed .tar.gz package includes **PRIMARY RESOURCES** (items 1-3) as wel
         print("{:-<65} {}".format(sentence, str(vs)))
 ```
 **[For a more complete demo, run `python vaderSentiment.py`]**
+
 =======
 ###--- Output for the above example code ---
 ```
@@ -186,6 +187,7 @@ Today SUX!------------------------------------------------------- {'neg': 0.779,
 Today only kinda sux! But I'll get by, lol----------------------- {'neg': 0.179, 'neu': 0.569, 'pos': 0.251, 'compound': 0.2228}
 ```
 **[For a more complete demo, run `python vaderSentiment.py`]**
+
 =======
 ###--- About the scoring ---
 - The `compound` score is computed by summing the valence scores of each word in the lexicon, adjusted 
