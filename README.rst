@@ -1,7 +1,7 @@
 VADER-Sentiment-Analysis
 ====================================
 
-VADER (Valence Aware Dictionary and sEntiment Reasoner) is a lexicon and rule-based sentiment analysis tool that is *specifically attuned to sentiments expressed in social media*. It is fully open-sourced under the `Link [MIT License] <http://choosealicense.com/>`_ (we sincerely appreciate all attributions and readily accept most contributions, but please don't hold us liable).
+VADER (Valence Aware Dictionary and sEntiment Reasoner) is a lexicon and rule-based sentiment analysis tool that is *specifically attuned to sentiments expressed in social media*. It is fully open-sourced under the `[MIT License] <http://choosealicense.com/>`_ (we sincerely appreciate all attributions and readily accept most contributions, but please don't hold us liable).
 
 ====================================
 Introduction
@@ -31,12 +31,11 @@ Installation
 ====================================
 
 There are a couple of ways to install and use VADER sentiment:  
+
 #. The simplest is to use the command line to do an installation from PyPI using pip, e.g., 
-``
-> pip install vaderSentiment
-``
-#. You could also clone the `Link [GitHub repository] <https://github.com/cjhutto/vaderSentiment>`_ 
-#. You could simply download either the `Link [full master branch zip file] <https://github.com/cjhutto/vaderSentiment/archive/master.zip>`_ 
+   ``> pip install vaderSentiment``
+#. You could also clone the `[GitHub repository] <https://github.com/cjhutto/vaderSentiment>`_ 
+#. You could simply download either the `[full master branch zip file] <https://github.com/cjhutto/vaderSentiment/archive/master.zip>`_ 
 
 ====================================
 Resources and Dataset Descriptions
@@ -138,8 +137,11 @@ The compressed .tar.gz package includes **PRIMARY RESOURCES** (items 1-3) as wel
 ====================================
 Python Code EXAMPLE:
 ====================================
+
 **[For a more complete demo, run `python vaderSentiment.py`]**
-``
+
+::
+
 	from vaderSentiment import SentimentIntensityAnalyzer
 	#note: depending on how you installed (e.g., using source code download versus pip install), you may need to import like this:
 	#from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
@@ -165,14 +167,17 @@ Python Code EXAMPLE:
     for sentence in sentences:
         vs = analyzer.polarity_scores(sentence)
         print("{:-<65} {}".format(sentence, str(vs)))
-``
+
+::
+
 **[For a more complete demo, run `python vaderSentiment.py`]**
 
 ====================================
 Output for the above example code
 ====================================
 
-```
+::
+
 VADER is smart, handsome, and funny.----------------------------- {'neg': 0.0, 'neu': 0.254, 'pos': 0.746, 'compound': 0.8316}
 VADER is not smart, handsome, nor funny.------------------------- {'neg': 0.646, 'neu': 0.354, 'pos': 0.0, 'compound': -0.7424}
 VADER is smart, handsome, and funny!----------------------------- {'neg': 0.0, 'neu': 0.248, 'pos': 0.752, 'compound': 0.8439}
@@ -187,18 +192,20 @@ At least it isn't a horrible book.------------------------------- {'neg': 0.0, '
 Make sure you :) or :D today!------------------------------------ {'neg': 0.0, 'neu': 0.294, 'pos': 0.706, 'compound': 0.8633}
 Today SUX!------------------------------------------------------- {'neg': 0.779, 'neu': 0.221, 'pos': 0.0, 'compound': -0.5461}
 Today only kinda sux! But I'll get by, lol----------------------- {'neg': 0.179, 'neu': 0.569, 'pos': 0.251, 'compound': 0.2228}
-```
+
+::
 
 **[For a more complete demo, run `python vaderSentiment.py`]**
 
 ====================================
 About the scoring
 ====================================
-- The `compound` score is computed by summing the valence scores of each word in the lexicon, adjusted 
+
+* The ``compound`` score is computed by summing the valence scores of each word in the lexicon, adjusted 
 	 according to the rules, and then normalized to be between -1 (most extreme negative) and +1 (most extreme positive). 
 	 This is the most useful metric if you want a single unidimensional measure of sentiment for a given sentence.  
 	 Calling it a 'normalized, weighted composite score' is accurate.
-- The `pos`, `neu`, and `neg` scores are ratios for proportions of text that fall in each category (so these   
+* The ``pos``, ``neu``, and ``neg`` scores are ratios for proportions of text that fall in each category (so these   
 	 should all add up to be 1... or close to it with float operation).  These are the most useful metrics if 
 	 you want multidimensional measures of sentiment for a given sentence.
 
