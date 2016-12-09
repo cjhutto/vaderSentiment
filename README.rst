@@ -1,7 +1,7 @@
 VADER-Sentiment-Analysis
 ====================================
 
-VADER (Valence Aware Dictionary and sEntiment Reasoner) is a lexicon and rule-based sentiment analysis tool that is *specifically attuned to sentiments expressed in social media*. It is fully open-sourced under the `Link [MIT License]<http://choosealicense.com/>`_ (we sincerely appreciate all attributions and readily accept most contributions, but please don't hold us liable).
+VADER (Valence Aware Dictionary and sEntiment Reasoner) is a lexicon and rule-based sentiment analysis tool that is *specifically attuned to sentiments expressed in social media*. It is fully open-sourced under the `Link [MIT License] <http://choosealicense.com/>`_ (we sincerely appreciate all attributions and readily accept most contributions, but please don't hold us liable).
 
 ====================================
 Introduction
@@ -35,9 +35,8 @@ There are a couple of ways to install and use VADER sentiment:
 ``
 > pip install vaderSentiment
 ``
-#. You could also clone the [GitHub repository](https://github.com/cjhutto/vaderSentiment) (HTTPS clone URL: https://github.com/cjhutto/vaderSentiment.git)
-#. You could simply download either the `Link [full master branch zip file]<https://github.com/cjhutto/vaderSentiment/archive/master.zip>`_ , or the `Link [public release source code]<https://github.com/cjhutto/vaderSentiment/releases/tag/0.5>`_ as a `Link [compressed .zip file]<https://github.com/cjhutto/vaderSentiment/archive/0.5.zip>`_ or `Link [tarball .tar.gz file]<https://github.com/cjhutto/vaderSentiment/archive/0.5.tar.gz>`_ 
-
+#. You could also clone the `Link [GitHub repository] <https://github.com/cjhutto/vaderSentiment>`_ 
+#. You could simply download either the `Link [full master branch zip file] <https://github.com/cjhutto/vaderSentiment/archive/master.zip>`_ 
 
 ====================================
 Resources and Dataset Descriptions
