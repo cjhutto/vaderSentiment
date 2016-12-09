@@ -1,303 +1,395 @@
-#!/usr/bin/python
-# coding: utf-8 
-'''
-Created on July 04, 2013
-@author: C.J. Hutto
+# coding: utf-8
+# Author: C.J. Hutto
+# Thanks to George Berry for reducing the time complexity from something like O(N^4) to O(N).
+# Thanks to Ewan Klein and Pierpaolo Pantone for bringing VADER into NLTK. Those modifications were awesome.
+# For license information, see LICENSE.TXT
 
-Citation Information
+"""
+If you use the VADER sentiment analysis tools, please cite:
+Hutto, C.J. & Gilbert, E.E. (2014). VADER: A Parsimonious Rule-based Model for
+Sentiment Analysis of Social Media Text. Eighth International Conference on
+Weblogs and Social Media (ICWSM-14). Ann Arbor, MI, June 2014.
+"""
 
-If you use any of the VADER sentiment analysis tools 
-(VADER sentiment lexicon or Python code for rule-based sentiment 
-analysis engine) in your work or research, please cite the paper. 
-For example:
+import math, re, string, requests, json
+from itertools import product
 
-  Hutto, C.J. & Gilbert, E.E. (2014). VADER: A Parsimonious Rule-based Model for 
-  Sentiment Analysis of Social Media Text. Eighth International Conference on 
-  Weblogs and Social Media (ICWSM-14). Ann Arbor, MI, June 2014.
-'''
+##Constants##
 
-import os, math, re, sys, fnmatch, string 
-reload(sys)
-
-def make_lex_dict(f):
-    return dict(map(lambda (w, m): (w, float(m)), [wmsr.strip().split('\t')[0:2] for wmsr in open(f) ]))
-    
-f = 'vader_sentiment_lexicon.txt' # empirically derived valence ratings for words, emoticons, slang, swear words, acronyms/initialisms
-try:
-    WORD_VALENCE_DICT = make_lex_dict(f)
-except:
-    f = os.path.join(os.path.dirname(__file__),'vader_sentiment_lexicon.txt')
-    WORD_VALENCE_DICT = make_lex_dict(f)
-
-
-##CONSTANTS#####
-
-#(empirically derived mean sentiment intensity rating increase for booster words)
+# (empirically derived mean sentiment intensity rating increase for booster words)
 B_INCR = 0.293
 B_DECR = -0.293
 
-#(empirically derived mean sentiment intensity rating increase for using ALLCAPs to emphasize a word)
-c_INCR = 0.733
+# (empirically derived mean sentiment intensity rating increase for using
+# ALLCAPs to emphasize a word)
+C_INCR = 0.733
+
+N_SCALAR = -0.74
 
 # for removing punctuation
 REGEX_REMOVE_PUNCTUATION = re.compile('[%s]' % re.escape(string.punctuation))
 
 PUNC_LIST = [".", "!", "?", ",", ";", ":", "-", "'", "\"",
-                "!!", "!!!", "??", "???", "?!?", "!?!", "?!?!", "!?!?"]
-NEGATE = ["aint", "arent", "cannot", "cant", "couldnt", "darent", "didnt", "doesnt",
-              "ain't", "aren't", "can't", "couldn't", "daren't", "didn't", "doesn't",
-              "dont", "hadnt", "hasnt", "havent", "isnt", "mightnt", "mustnt", "neither",
-              "don't", "hadn't", "hasn't", "haven't", "isn't", "mightn't", "mustn't",
-              "neednt", "needn't", "never", "none", "nope", "nor", "not", "nothing", "nowhere",
-              "oughtnt", "shant", "shouldnt", "uhuh", "wasnt", "werent",
-              "oughtn't", "shan't", "shouldn't", "uh-uh", "wasn't", "weren't",
-              "without", "wont", "wouldnt", "won't", "wouldn't", "rarely", "seldom", "despite"]
-# booster/dampener 'intensifiers' or 'degree adverbs' http://en.wiktionary.org/wiki/Category:English_degree_adverbs
-BOOSTER_DICT = {"absolutely": B_INCR, "amazingly": B_INCR, "awfully": B_INCR, "completely": B_INCR, "considerably": B_INCR,
-                "decidedly": B_INCR, "deeply": B_INCR, "effing": B_INCR, "enormously": B_INCR,
-                "entirely": B_INCR, "especially": B_INCR, "exceptionally": B_INCR, "extremely": B_INCR,
-                "fabulously": B_INCR, "flipping": B_INCR, "flippin": B_INCR,
-                "fricking": B_INCR, "frickin": B_INCR, "frigging": B_INCR, "friggin": B_INCR, "fully": B_INCR, "fucking": B_INCR,
-                "greatly": B_INCR, "hella": B_INCR, "highly": B_INCR, "hugely": B_INCR, "incredibly": B_INCR,
-                "intensely": B_INCR, "majorly": B_INCR, "more": B_INCR, "most": B_INCR, "particularly": B_INCR,
-                "purely": B_INCR, "quite": B_INCR, "really": B_INCR, "remarkably": B_INCR,
-                "so": B_INCR,  "substantially": B_INCR,
-                "thoroughly": B_INCR, "totally": B_INCR, "tremendously": B_INCR,
-                "uber": B_INCR, "unbelievably": B_INCR, "unusually": B_INCR, "utterly": B_INCR,
-                "very": B_INCR,
-                "almost": B_DECR, "barely": B_DECR, "hardly": B_DECR, "just enough": B_DECR,
-                "kind of": B_DECR, "kinda": B_DECR, "kindof": B_DECR, "kind-of": B_DECR,
-                "less": B_DECR, "little": B_DECR, "marginally": B_DECR, "occasionally": B_DECR, "partly": B_DECR,
-                "scarcely": B_DECR, "slightly": B_DECR, "somewhat": B_DECR,
-                "sort of": B_DECR, "sorta": B_DECR, "sortof": B_DECR, "sort-of": B_DECR}
+             "!!", "!!!", "??", "???", "?!?", "!?!", "?!?!", "!?!?"]
+NEGATE = \
+["aint", "arent", "cannot", "cant", "couldnt", "darent", "didnt", "doesnt",
+ "ain't", "aren't", "can't", "couldn't", "daren't", "didn't", "doesn't",
+ "dont", "hadnt", "hasnt", "havent", "isnt", "mightnt", "mustnt", "neither",
+ "don't", "hadn't", "hasn't", "haven't", "isn't", "mightn't", "mustn't",
+ "neednt", "needn't", "never", "none", "nope", "nor", "not", "nothing", "nowhere",
+ "oughtnt", "shant", "shouldnt", "uhuh", "wasnt", "werent",
+ "oughtn't", "shan't", "shouldn't", "uh-uh", "wasn't", "weren't",
+ "without", "wont", "wouldnt", "won't", "wouldn't", "rarely", "seldom", "despite"]
 
-# check for special case idioms using a sentiment-laden keyword known to SAGE
+# booster/dampener 'intensifiers' or 'degree adverbs'
+# http://en.wiktionary.org/wiki/Category:English_degree_adverbs
+
+BOOSTER_DICT = \
+{"absolutely": B_INCR, "amazingly": B_INCR, "awfully": B_INCR, "completely": B_INCR, "considerably": B_INCR,
+ "decidedly": B_INCR, "deeply": B_INCR, "effing": B_INCR, "enormously": B_INCR,
+ "entirely": B_INCR, "especially": B_INCR, "exceptionally": B_INCR, "extremely": B_INCR,
+ "fabulously": B_INCR, "flipping": B_INCR, "flippin": B_INCR,
+ "fricking": B_INCR, "frickin": B_INCR, "frigging": B_INCR, "friggin": B_INCR, "fully": B_INCR, "fucking": B_INCR,
+ "greatly": B_INCR, "hella": B_INCR, "highly": B_INCR, "hugely": B_INCR, "incredibly": B_INCR,
+ "intensely": B_INCR, "majorly": B_INCR, "more": B_INCR, "most": B_INCR, "particularly": B_INCR,
+ "purely": B_INCR, "quite": B_INCR, "really": B_INCR, "remarkably": B_INCR,
+ "so": B_INCR, "substantially": B_INCR,
+ "thoroughly": B_INCR, "totally": B_INCR, "tremendously": B_INCR,
+ "uber": B_INCR, "unbelievably": B_INCR, "unusually": B_INCR, "utterly": B_INCR,
+ "very": B_INCR,
+ "almost": B_DECR, "barely": B_DECR, "hardly": B_DECR, "just enough": B_DECR,
+ "kind of": B_DECR, "kinda": B_DECR, "kindof": B_DECR, "kind-of": B_DECR,
+ "less": B_DECR, "little": B_DECR, "marginally": B_DECR, "occasionally": B_DECR, "partly": B_DECR,
+ "scarcely": B_DECR, "slightly": B_DECR, "somewhat": B_DECR,
+ "sort of": B_DECR, "sorta": B_DECR, "sortof": B_DECR, "sort-of": B_DECR}
+
+# check for special case idioms using a sentiment-laden keyword known to VADER
 SPECIAL_CASE_IDIOMS = {"the shit": 3, "the bomb": 3, "bad ass": 1.5, "yeah right": -2,
                        "cut the mustard": 2, "kiss of death": -1.5, "hand to mouth": -2}
 
-def negated(list, nWords=[], includeNT=True):
-    nWords.extend(NEGATE)
-    for word in nWords:
-        if word in list:
+
+##Static methods##
+
+def negated(input_words, include_nt=True):
+    """
+    Determine if input contains negation words
+    """
+    neg_words = []
+    neg_words.extend(NEGATE)
+    for word in neg_words:
+        if word in input_words:
             return True
-    if includeNT:
-        for word in list:
+    if include_nt:
+        for word in input_words:
             if "n't" in word:
                 return True
-    if "least" in list:
-        i = list.index("least")
-        if i > 0 and list[i-1] != "at":
+    if "least" in input_words:
+        i = input_words.index("least")
+        if i > 0 and input_words[i-1] != "at":
             return True
     return False
 
+
 def normalize(score, alpha=15):
-    # normalize the score to be between -1 and 1 using an alpha that approximates the max expected value
-    normScore = score/math.sqrt( ((score*score) + alpha) )
-    return normScore
+    """
+    Normalize the score to be between -1 and 1 using an alpha that
+    approximates the max expected value
+    """
+    norm_score = score/math.sqrt((score*score) + alpha)
+    if norm_score < -1.0: 
+        return -1.0
+    elif norm_score > 1.0:
+        return 1.0
+    else:
+        return norm_score
 
-def wildCardMatch(patternWithWildcard, listOfStringsToMatchAgainst):
-    listOfMatches = fnmatch.filter(listOfStringsToMatchAgainst, patternWithWildcard)
-    return listOfMatches
+
+def allcap_differential(words):
+    """
+    Check whether just some words in the input are ALL CAPS
+    :param list words: The words to inspect
+    :returns: `True` if some but not all items in `words` are ALL CAPS
+    """
+    is_different = False
+    allcap_words = 0
+    for word in words:
+        if word.isupper():
+            allcap_words += 1
+    cap_differential = len(words) - allcap_words
+    if cap_differential > 0 and cap_differential < len(words):
+        is_different = True
+    return is_different
 
 
-def isALLCAP_differential(wordList):
-    countALLCAPS= 0
-    for w in wordList:
-        if w.isupper():
-            countALLCAPS += 1
-    cap_differential = len(wordList) - countALLCAPS
-    if cap_differential > 0 and cap_differential < len(wordList):
-        isDiff = True
-    else: isDiff = False
-    return isDiff
-
-#check if the preceding words increase, decrease, or negate/nullify the valence
-def scalar_inc_dec(word, valence, isCap_diff):
+def scalar_inc_dec(word, valence, is_cap_diff):
+    """
+    Check if the preceding words increase, decrease, or negate/nullify the
+    valence
+    """
     scalar = 0.0
     word_lower = word.lower()
     if word_lower in BOOSTER_DICT:
         scalar = BOOSTER_DICT[word_lower]
-        if valence < 0: scalar *= -1
+        if valence < 0:
+            scalar *= -1
         #check if booster/dampener word is in ALLCAPS (while others aren't)
-        if word.isupper() and isCap_diff:
-            if valence > 0: scalar += c_INCR
-            else:  scalar -= c_INCR
+        if word.isupper() and is_cap_diff:
+            if valence > 0:
+                scalar += C_INCR
+            else: scalar -= C_INCR
     return scalar
 
-def sentiment(text):
+class SentiText(object):
     """
-    Returns a float for sentiment strength based on the input text.
-    Positive values are positive valence, negative value are negative valence.
+    Identify sentiment-relevant string-level properties of input text.
     """
-    if not isinstance(text, unicode) and not isinstance(text, str):
-        text = str(text)
+    def __init__(self, text):
+        if not isinstance(text, str):
+            text = str(text.encode('utf-8'))
+        self.text = text
+        self.words_and_emoticons = self._words_and_emoticons()
+        # doesn't separate words from\
+        # adjacent punctuation (keeps emoticons & contractions)
+        self.is_cap_diff = allcap_differential(self.words_and_emoticons)
 
-    wordsAndEmoticons = text.split() #doesn't separate words from adjacent punctuation (keeps emoticons & contractions)
-    text_mod = REGEX_REMOVE_PUNCTUATION.sub('', text) # removes punctuation (but loses emoticons & contractions)
-    wordsOnly = text_mod.split()
-    # get rid of empty items or single letter "words" like 'a' and 'I' from wordsOnly
-    for word in wordsOnly:
-        if len(word) <= 1:
-            wordsOnly.remove(word)    
-    # now remove adjacent & redundant punctuation from [wordsAndEmoticons] while keeping emoticons and contractions
+    def _words_plus_punc(self):
+        """
+        Returns mapping of form:
+        {
+            'cat,': 'cat',
+            ',cat': 'cat',
+        }
+        """
+        no_punc_text = REGEX_REMOVE_PUNCTUATION.sub('', self.text)
+        # removes punctuation (but loses emoticons & contractions)
+        words_only = no_punc_text.split()
+        # remove singletons
+        words_only = set( w for w in words_only if len(w) > 1 )
+        # the product gives ('cat', ',') and (',', 'cat')
+        punc_before = {''.join(p): p[1] for p in product(PUNC_LIST, words_only)}
+        punc_after = {''.join(p): p[0] for p in product(words_only, PUNC_LIST)}
+        words_punc_dict = punc_before
+        words_punc_dict.update(punc_after)
+        return words_punc_dict
 
-    for word in wordsOnly:
-        for p in PUNC_LIST:
-            pword = p + word
-            x1 = wordsAndEmoticons.count(pword)
-            while x1 > 0:
-                i = wordsAndEmoticons.index(pword)
-                wordsAndEmoticons.remove(pword)
-                wordsAndEmoticons.insert(i, word)
-                x1 = wordsAndEmoticons.count(pword)
-            
-            wordp = word + p
-            x2 = wordsAndEmoticons.count(wordp)
-            while x2 > 0:
-                i = wordsAndEmoticons.index(wordp)
-                wordsAndEmoticons.remove(wordp)
-                wordsAndEmoticons.insert(i, word)
-                x2 = wordsAndEmoticons.count(wordp)
+    def _words_and_emoticons(self):
+        """
+        Removes leading and trailing puncutation
+        Leaves contractions and most emoticons
+            Does not preserve punc-plus-letter emoticons (e.g. :D)
+        """
+        wes = self.text.split()
+        words_punc_dict = self._words_plus_punc()
+        wes = [we for we in wes if len(we) > 1]
+        for i, we in enumerate(wes):
+            if we in words_punc_dict:
+                wes[i] = words_punc_dict[we]
+        return wes
 
-    # get rid of residual empty items or single letter "words" like 'a' and 'I' from wordsAndEmoticons
-    for word in wordsAndEmoticons:
-        if len(word) <= 1:
-            wordsAndEmoticons.remove(word)
-    
-    # remove stopwords from [wordsAndEmoticons]
-    #stopwords = [str(word).strip() for word in open('stopwords.txt')]
-    #for word in wordsAndEmoticons:
-    #    if word in stopwords:
-    #        wordsAndEmoticons.remove(word)
-    
-    # check for negation
+class SentimentIntensityAnalyzer(object):
+    """
+    Give a sentiment intensity score to sentences.
+    """
+    #def __init__(self, lexicon_file="sentiment/vader_lexicon.zip/vader_lexicon/vader_lexicon.txt"):
+    def __init__(self, lexicon_file="vader_lexicon.txt"):
+        #self.lexicon_file = nltk.data.load(lexicon_file)
+        with open(lexicon_file) as f:
+            self.lexicon_file = f.read()
+        self.lexicon = self.make_lex_dict()
 
-    isCap_diff = isALLCAP_differential(wordsAndEmoticons)
+    def make_lex_dict(self):
+        """
+        Convert lexicon file to a dictionary
+        """
+        lex_dict = {}
+        for line in self.lexicon_file.split('\n'):
+            (word, measure) = line.strip().split('\t')[0:2]
+            lex_dict[word] = float(measure)
+        return lex_dict
 
-    sentiments = []
-    for item in wordsAndEmoticons:
-        v = 0
-        i = wordsAndEmoticons.index(item)
-        if (i < len(wordsAndEmoticons)-1 and item.lower() == "kind" and \
-           wordsAndEmoticons[i+1].lower() == "of") or item.lower() in BOOSTER_DICT:
-            sentiments.append(v)
-            continue
-        item_lowercase = item.lower()
-        if item_lowercase in WORD_VALENCE_DICT:
-            #get the sentiment valence
-            v = float(WORD_VALENCE_DICT[item_lowercase])
-            
-            #check if sentiment laden word is in ALLCAPS (while others aren't)
-            
-            if item.isupper() and isCap_diff:
-                if v > 0: v += c_INCR
-                else: v -= c_INCR
+    def polarity_scores(self, text):
+        """
+        Return a float for sentiment strength based on the input text.
+        Positive values are positive valence, negative value are negative
+        valence.
+        """
+        sentitext = SentiText(text)
+        #text, words_and_emoticons, is_cap_diff = self.preprocess(text)
 
+        sentiments = []
+        words_and_emoticons = sentitext.words_and_emoticons
+        for item in words_and_emoticons:
+            valence = 0
+            i = words_and_emoticons.index(item)
+            if (i < len(words_and_emoticons) - 1 and item.lower() == "kind" and \
+                words_and_emoticons[i+1].lower() == "of") or \
+                item.lower() in BOOSTER_DICT:
+                sentiments.append(valence)
+                continue
 
-            n_scalar = -0.74
-            if i > 0 and wordsAndEmoticons[i-1].lower() not in WORD_VALENCE_DICT:
-                s1 = scalar_inc_dec(wordsAndEmoticons[i-1], v,isCap_diff)
-                v = v+s1
-                if negated([wordsAndEmoticons[i-1]]): v = v*n_scalar
-            if i > 1 and wordsAndEmoticons[i-2].lower() not in WORD_VALENCE_DICT:
-                s2 = scalar_inc_dec(wordsAndEmoticons[i-2], v,isCap_diff)
-                if s2 != 0: s2 = s2*0.95
-                v = v+s2
-                # check for special use of 'never' as valence modifier instead of negation
-                if wordsAndEmoticons[i-2] == "never" and (wordsAndEmoticons[i-1] == "so" or wordsAndEmoticons[i-1] == "this"): 
-                    v = v*1.5                    
-                # otherwise, check for negation/nullification
-                elif negated([wordsAndEmoticons[i-2]]): v = v*n_scalar
-            if i > 2 and wordsAndEmoticons[i-3].lower() not in WORD_VALENCE_DICT:
-                s3 = scalar_inc_dec(wordsAndEmoticons[i-3], v,isCap_diff)
-                if s3 != 0: s3 = s3*0.9
-                v = v+s3
-                # check for special use of 'never' as valence modifier instead of negation
-                if wordsAndEmoticons[i-3] == "never" and \
-                   (wordsAndEmoticons[i-2] == "so" or wordsAndEmoticons[i-2] == "this") or \
-                   (wordsAndEmoticons[i-1] == "so" or wordsAndEmoticons[i-1] == "this"):
-                    v = v*1.25
-                # otherwise, check for negation/nullification
-                elif negated([wordsAndEmoticons[i-3]]): v = v*n_scalar
-                
+            sentiments = self.sentiment_valence(valence, sentitext, item, i, sentiments)
 
-                # future work: consider other sentiment-laden idioms
-                #other_idioms = {"back handed": -2, "blow smoke": -2, "blowing smoke": -2, "upper hand": 1, "break a leg": 2, 
-                #                "cooking with gas": 2, "in the black": 2, "in the red": -2, "on the ball": 2,"under the weather": -2}
-            
-                onezero = u"{} {}".format(wordsAndEmoticons[i-1], wordsAndEmoticons[i])
-                twoonezero = u"{} {} {}".format(wordsAndEmoticons[i-2], wordsAndEmoticons[i-1], wordsAndEmoticons[i])
-                twoone = u"{} {}".format(wordsAndEmoticons[i-2], wordsAndEmoticons[i-1])
-                threetwoone = u"{} {} {}".format(wordsAndEmoticons[i-3], wordsAndEmoticons[i-2], wordsAndEmoticons[i-1])
-                threetwo = u"{} {}".format(wordsAndEmoticons[i-3], wordsAndEmoticons[i-2])
-                if onezero in SPECIAL_CASE_IDIOMS:
-                    v = SPECIAL_CASE_IDIOMS[onezero]
-                elif twoonezero in SPECIAL_CASE_IDIOMS:
-                    v = SPECIAL_CASE_IDIOMS[twoonezero]
-                elif twoone in SPECIAL_CASE_IDIOMS:
-                    v = SPECIAL_CASE_IDIOMS[twoone]
-                elif threetwoone in SPECIAL_CASE_IDIOMS:
-                    v = SPECIAL_CASE_IDIOMS[threetwoone]
-                elif threetwo in SPECIAL_CASE_IDIOMS:
-                    v = SPECIAL_CASE_IDIOMS[threetwo]
-                if len(wordsAndEmoticons)-1 > i:
-                    zeroone = u"{} {}".format(wordsAndEmoticons[i], wordsAndEmoticons[i+1])
-                    if zeroone in SPECIAL_CASE_IDIOMS:
-                        v = SPECIAL_CASE_IDIOMS[zeroone]
-                if len(wordsAndEmoticons)-1 > i+1:
-                    zeroonetwo = u"{} {}".format(wordsAndEmoticons[i], wordsAndEmoticons[i+1], wordsAndEmoticons[i+2])
-                    if zeroonetwo in SPECIAL_CASE_IDIOMS:
-                        v = SPECIAL_CASE_IDIOMS[zeroonetwo]
-                
-                # check for booster/dampener bi-grams such as 'sort of' or 'kind of'
-                if threetwo in BOOSTER_DICT or twoone in BOOSTER_DICT:
-                    v = v+B_DECR
-            
-            # check for negation case using "least"
-            if i > 1 and wordsAndEmoticons[i-1].lower() not in WORD_VALENCE_DICT \
-                and wordsAndEmoticons[i-1].lower() == "least":
-                if (wordsAndEmoticons[i-2].lower() != "at" and wordsAndEmoticons[i-2].lower() != "very"):
-                    v = v*n_scalar
-            elif i > 0 and wordsAndEmoticons[i-1].lower() not in WORD_VALENCE_DICT \
-                and wordsAndEmoticons[i-1].lower() == "least":
-                v = v*n_scalar
-        sentiments.append(v) 
-            
-    # check for modification in sentiment due to contrastive conjunction 'but'
-    if 'but' in wordsAndEmoticons or 'BUT' in wordsAndEmoticons:
-        try: bi = wordsAndEmoticons.index('but')
-        except: bi = wordsAndEmoticons.index('BUT')
-        for s in sentiments:
-            si = sentiments.index(s)
-            if si < bi: 
-                sentiments.pop(si)
-                sentiments.insert(si, s*0.5)
-            elif si > bi: 
-                sentiments.pop(si)
-                sentiments.insert(si, s*1.5) 
-                
-    if sentiments:                      
-        sum_s = float(sum(sentiments))
-        #print sentiments, sum_s
+        sentiments = self._but_check(words_and_emoticons, sentiments)
         
+        valence_dict = self.score_valence(sentiments, text)
+
+        return valence_dict
+
+    def sentiment_valence(self, valence, sentitext, item, i, sentiments):
+        is_cap_diff = sentitext.is_cap_diff
+        words_and_emoticons = sentitext.words_and_emoticons
+        item_lowercase = item.lower()
+        if item_lowercase in self.lexicon:
+            #get the sentiment valence
+            valence = self.lexicon[item_lowercase]
+
+            #check if sentiment laden word is in ALL CAPS (while others aren't)
+            if item.isupper() and is_cap_diff:
+                if valence > 0:
+                    valence += C_INCR
+                else:
+                    valence -= C_INCR
+
+            for start_i in range(0,3):
+                if i > start_i and words_and_emoticons[i-(start_i+1)].lower() not in self.lexicon:
+                    # dampen the scalar modifier of preceding words and emoticons
+                    # (excluding the ones that immediately preceed the item) based
+                    # on their distance from the current item.
+                    s = scalar_inc_dec(words_and_emoticons[i-(start_i+1)], valence, is_cap_diff)
+                    if start_i == 1 and s != 0:
+                        s = s*0.95
+                    if start_i == 2 and s != 0:
+                        s = s*0.9
+                    valence = valence+s
+                    valence = self._never_check(valence, words_and_emoticons, start_i, i)
+                    if start_i == 2:
+                        valence = self._idioms_check(valence, words_and_emoticons, i)
+
+                        # future work: consider other sentiment-laden idioms
+                        # other_idioms =
+                        # {"back handed": -2, "blow smoke": -2, "blowing smoke": -2,
+                        #  "upper hand": 1, "break a leg": 2,
+                        #  "cooking with gas": 2, "in the black": 2, "in the red": -2,
+                        #  "on the ball": 2,"under the weather": -2}
+
+            valence = self._least_check(valence, words_and_emoticons, i)
+
+        sentiments.append(valence)
+        return sentiments
+
+    def _least_check(self, valence, words_and_emoticons, i):
+        # check for negation case using "least"
+        if i > 1 and words_and_emoticons[i-1].lower() not in self.lexicon \
+           and words_and_emoticons[i-1].lower() == "least":
+            if words_and_emoticons[i-2].lower() != "at" and words_and_emoticons[i-2].lower() != "very":
+                valence = valence*N_SCALAR
+        elif i > 0 and words_and_emoticons[i-1].lower() not in self.lexicon \
+             and words_and_emoticons[i-1].lower() == "least":
+            valence = valence*N_SCALAR
+        return valence
+
+    def _but_check(self, words_and_emoticons, sentiments):
+        # check for modification in sentiment due to contrastive conjunction 'but'
+        if 'but' in words_and_emoticons or 'BUT' in words_and_emoticons:
+            try:
+                bi = words_and_emoticons.index('but')
+            except ValueError:
+                bi = words_and_emoticons.index('BUT')
+            for sentiment in sentiments:
+                si = sentiments.index(sentiment)
+                if si < bi:
+                    sentiments.pop(si)
+                    sentiments.insert(si, sentiment*0.5)
+                elif si > bi:
+                    sentiments.pop(si)
+                    sentiments.insert(si, sentiment*1.5)
+        return sentiments
+
+    def _idioms_check(self, valence, words_and_emoticons, i):
+        onezero = "{0} {1}".format(words_and_emoticons[i-1], words_and_emoticons[i])
+
+        twoonezero = "{0} {1} {2}".format(words_and_emoticons[i-2],
+                                       words_and_emoticons[i-1], words_and_emoticons[i])
+
+        twoone = "{0} {1}".format(words_and_emoticons[i-2], words_and_emoticons[i-1])
+
+        threetwoone = "{0} {1} {2}".format(words_and_emoticons[i-3],
+                                        words_and_emoticons[i-2], words_and_emoticons[i-1])
+
+        threetwo = "{0} {1}".format(words_and_emoticons[i-3], words_and_emoticons[i-2])
+
+        sequences = [onezero, twoonezero, twoone, threetwoone, threetwo]
+
+        for seq in sequences:
+            if seq in SPECIAL_CASE_IDIOMS:
+                valence = SPECIAL_CASE_IDIOMS[seq]
+                break
+
+        if len(words_and_emoticons)-1 > i:
+            zeroone = "{0} {1}".format(words_and_emoticons[i], words_and_emoticons[i+1])
+            if zeroone in SPECIAL_CASE_IDIOMS:
+                valence = SPECIAL_CASE_IDIOMS[zeroone]
+        if len(words_and_emoticons)-1 > i+1:
+            zeroonetwo = "{0} {1} {2}".format(words_and_emoticons[i], words_and_emoticons[i+1], words_and_emoticons[i+2])
+            if zeroonetwo in SPECIAL_CASE_IDIOMS:
+                valence = SPECIAL_CASE_IDIOMS[zeroonetwo]
+
+        # check for booster/dampener bi-grams such as 'sort of' or 'kind of'
+        if threetwo in BOOSTER_DICT or twoone in BOOSTER_DICT:
+            valence = valence+B_DECR
+        return valence
+
+    def _never_check(self, valence, words_and_emoticons, start_i, i):
+        if start_i == 0:
+            if negated([words_and_emoticons[i-1]]):
+                    valence = valence*N_SCALAR
+        if start_i == 1:
+            if words_and_emoticons[i-2] == "never" and\
+               (words_and_emoticons[i-1] == "so" or
+                words_and_emoticons[i-1] == "this"):
+                valence = valence*1.5
+            elif negated([words_and_emoticons[i-(start_i+1)]]):
+                valence = valence*N_SCALAR
+        if start_i == 2:
+            if words_and_emoticons[i-3] == "never" and \
+               (words_and_emoticons[i-2] == "so" or words_and_emoticons[i-2] == "this") or \
+               (words_and_emoticons[i-1] == "so" or words_and_emoticons[i-1] == "this"):
+                valence = valence*1.25
+            elif negated([words_and_emoticons[i-(start_i+1)]]):
+                valence = valence*N_SCALAR
+        return valence
+
+    def _punctuation_emphasis(self, sum_s, text):
+        # add emphasis from exclamation points and question marks
+        ep_amplifier = self._amplify_ep(text)
+        qm_amplifier = self._amplify_qm(text)
+        punct_emph_amplifier = ep_amplifier+qm_amplifier
+        return punct_emph_amplifier
+
+    def _amplify_ep(self, text):
         # check for added emphasis resulting from exclamation points (up to 4 of them)
         ep_count = text.count("!")
-        if ep_count > 4: ep_count = 4
-        ep_amplifier = ep_count*0.292 #(empirically derived mean sentiment intensity rating increase for exclamation points)
-        if sum_s > 0:  sum_s += ep_amplifier
-        elif  sum_s < 0: sum_s -= ep_amplifier
-        
+        if ep_count > 4:
+            ep_count = 4
+        # (empirically derived mean sentiment intensity rating increase for
+        # exclamation points)
+        ep_amplifier = ep_count*0.292
+        return ep_amplifier
+
+    def _amplify_qm(self, text):
         # check for added emphasis resulting from question marks (2 or 3+)
         qm_count = text.count("?")
         qm_amplifier = 0
         if qm_count > 1:
-            if qm_count <= 3: qm_amplifier = qm_count*0.18
-            else: qm_amplifier = 0.96
-            if sum_s > 0:  sum_s += qm_amplifier
-            elif  sum_s < 0: sum_s -= qm_amplifier
+            if qm_count <= 3:
+                # (empirically derived mean sentiment intensity rating increase for
+                # question marks)
+                qm_amplifier = qm_count*0.18
+            else:
+                qm_amplifier = 0.96
+        return qm_amplifier
 
-        compound = normalize(sum_s)
-        
+    def _sift_sentiment_scores(self, sentiments):
         # want separate positive versus negative sentiment scores
         pos_sum = 0.0
         neg_sum = 0.0
@@ -309,82 +401,194 @@ def sentiment(text):
                 neg_sum += (float(sentiment_score) -1) # when used with math.fabs(), compensates for neutrals
             if sentiment_score == 0:
                 neu_count += 1
-        
-        if pos_sum > math.fabs(neg_sum): pos_sum += (ep_amplifier+qm_amplifier)
-        elif pos_sum < math.fabs(neg_sum): neg_sum -= (ep_amplifier+qm_amplifier)
-        
-        total = pos_sum + math.fabs(neg_sum) + neu_count
-        pos = math.fabs(pos_sum / total)
-        neg = math.fabs(neg_sum / total)
-        neu = math.fabs(neu_count / total)
-        
-    else:
-        compound = 0.0; pos = 0.0; neg = 0.0; neu = 0.0
-        
-    s = {"neg" : round(neg, 3), 
-         "neu" : round(neu, 3),
-         "pos" : round(pos, 3),
-         "compound" : round(compound, 4)}
-    return s
+        return pos_sum, neg_sum, neu_count
 
+    def score_valence(self, sentiments, text):
+        if sentiments:
+            sum_s = float(sum(sentiments))
+            # compute and add emphasis from punctuation in text
+            punct_emph_amplifier = self._punctuation_emphasis(sum_s, text)
+            if sum_s > 0:
+                sum_s += punct_emph_amplifier
+            elif  sum_s < 0:
+                sum_s -= punct_emph_amplifier
+
+            compound = normalize(sum_s)
+            # discriminate between positive, negative and neutral sentiment scores
+            pos_sum, neg_sum, neu_count = self._sift_sentiment_scores(sentiments)
+
+            if pos_sum > math.fabs(neg_sum):
+                pos_sum += (punct_emph_amplifier)
+            elif pos_sum < math.fabs(neg_sum):
+                neg_sum -= (punct_emph_amplifier)
+
+            total = pos_sum + math.fabs(neg_sum) + neu_count
+            pos = math.fabs(pos_sum / total)
+            neg = math.fabs(neg_sum / total)
+            neu = math.fabs(neu_count / total)
+
+        else:
+            compound = 0.0
+            pos = 0.0
+            neg = 0.0
+            neu = 0.0
+
+        sentiment_dict = \
+            {"neg" : round(neg, 3),
+             "neu" : round(neu, 3),
+             "pos" : round(pos, 3),
+             "compound" : round(compound, 4)}
+
+        return sentiment_dict
 
 if __name__ == '__main__':
     # --- examples -------
-    sentences = [
-                u"VADER is smart, handsome, and funny.",       # positive sentence example
-                u"VADER is smart, handsome, and funny!",       # punctuation emphasis handled correctly (sentiment intensity adjusted)
-                u"VADER is very smart, handsome, and funny.",  # booster words handled correctly (sentiment intensity adjusted)
-                u"VADER is VERY SMART, handsome, and FUNNY.",  # emphasis for ALLCAPS handled
-                u"VADER is VERY SMART, handsome, and FUNNY!!!",# combination of signals - VADER appropriately adjusts intensity
-                u"VADER is VERY SMART, really handsome, and INCREDIBLY FUNNY!!!",# booster words & punctuation make this close to ceiling for score
-                u"The book was good.",         # positive sentence
-                u"The book was kind of good.", # qualified positive sentence is handled correctly (intensity adjusted)
-                u"The plot was good, but the characters are uncompelling and the dialog is not great.", # mixed negation sentence
-                u"A really bad, horrible book.",       # negative sentence with booster words
-                u"At least it isn't a horrible book.", # negated negative sentence with contraction
-                u":) and :D",     # emoticons handled
-                u"",              # an empty string is correctly handled
-                u"Today sux",     #  negative slang handled
-                u"Today sux!",    #  negative slang with punctuation emphasis handled
-                u"Today SUX!",    #  negative slang with capitalization emphasis
-                u"Today kinda sux! But I'll get by, lol" # mixed sentiment example with slang and constrastive conjunction "but"
+    sentences = ["VADER is smart, handsome, and funny.",      # positive sentence example
+                "VADER is not smart, handsome, nor funny.",   # negation sentence example
+                "VADER is smart, handsome, and funny!",       # punctuation emphasis handled correctly (sentiment intensity adjusted)
+                "VADER is very smart, handsome, and funny.",  # booster words handled correctly (sentiment intensity adjusted)
+                "VADER is VERY SMART, handsome, and FUNNY.",  # emphasis for ALLCAPS handled
+                "VADER is VERY SMART, handsome, and FUNNY!!!",# combination of signals - VADER appropriately adjusts intensity
+                "VADER is VERY SMART, uber handsome, and FRIGGIN FUNNY!!!",# booster words & punctuation make this close to ceiling for score
+                "The book was good.",         # positive sentence
+                "The book was kind of good.", # qualified positive sentence is handled correctly (intensity adjusted)
+                "The plot was good, but the characters are uncompelling and the dialog is not great.", # mixed negation sentence
+                "At least it isn't a horrible book.", # negated negative sentence with contraction
+                "Make sure you :) or :D today!",     # emoticons handled
+                "Today SUX!",    #  negative slang with capitalization emphasis
+                "Today only kinda sux! But I'll get by, lol" # mixed sentiment example with slang and constrastive conjunction "but"
                  ]
-    paragraph = "It was one of the worst movies I've seen, despite good reviews. \
-    Unbelievably bad acting!! Poor direction. VERY poor production. \
-    The movie was bad. Very bad movie. VERY bad movie. VERY BAD movie. VERY BAD movie!"
     
-    from nltk import tokenize
-    lines_list = tokenize.sent_tokenize(paragraph)
-    sentences.extend(lines_list)
+    analyzer = SentimentIntensityAnalyzer()
     
-    tricky_sentences = [
+    print("----------------------------------------------------")
+    print(" - Analyze typical example cases, including handling of:")
+    print("  -- negations")
+    print("  -- punctuation emphasis & punctuation flooding")
+    print("  -- word-shape as emphasis (capitalization difference)")
+    print("  -- degree modifiers (intensifiers such as 'very' and dampeners such as 'kind of')")
+    print("  -- slang words as modifiers such as 'uber' or 'friggin' or 'kinda'")
+    print("  -- contrastive conjunction 'but' indicating a shift in sentiment; sentiment of later text is dominant")
+    print("  -- use of contractions as negations")
+    print("  -- sentiment laden emoticons such as :) and :D")
+    print("  -- sentiment laden slang words (e.g., 'sux')")
+    print("  -- sentiment laden initialisms and acronyms (for example: 'lol') \n")
+    for sentence in sentences:
+        vs = analyzer.polarity_scores(sentence)
+        print("{:-<65} {}".format(sentence, str(vs)))
+    print("----------------------------------------------------")
+    print(" - About the scoring: ")
+    print("""  -- The 'compound' score is computed by summing the valence scores of each word in the lexicon, adjusted 
+     according to the rules, and then normalized to be between -1 (most extreme negative) and +1 (most extreme positive). 
+     This is the most useful metric if you want a single unidimensional measure of sentiment for a given sentence.  
+     Calling it a 'normalized, weighted composite score' is accurate.""")
+    print("""  -- The 'pos', 'neu', and 'neg' scores are ratios for proportions of text that fall in each category (so these   
+     should all add up to be 1... or close to it with float operation).  These are the most useful metrics if 
+     you want multidimensional measures of sentiment for a given sentence.""")
+    print("----------------------------------------------------")
+    
+    raw_input("\nPress Enter to continue the demo...\n") # for DEMO purposes...
+    
+    tricky_sentences = ["Sentiment analysis has never been good.",
+                        "Sentiment analysis has never been this good!",
                         "Most automated sentiment analysis tools are shit.",
-                        "VADER sentiment analysis is the shit.",
-                        "Sentiment analysis has never been good.",
-                        "Sentiment analysis with VADER has never been this good.",
-                        "Warren Beatty has never been so entertaining.",
-                        "I won't say that the movie is astounding and I wouldn't claim that the movie is too banal either.",
-                        "I like to hate Michael Bay films, but I couldn't fault this one",
-                        "It's one thing to watch an Uwe Boll film, but another thing entirely to pay for it",
-                        "The movie was too good",
-                        "This movie was actually neither that funny, nor super witty.",
-                        "This movie doesn't care about cleverness, wit or any other kind of intelligent humor.",
-                        "Those who find ugly meanings in beautiful things are corrupt without being charming.",
-                        "There are slow and repetitive parts, BUT it has just enough spice to keep it interesting.",
-                        "The script is not fantastic, but the acting is decent and the cinematography is EXCELLENT!", 
+                        "With VADER, sentiment analysis is the shit!",
+                        "Other sentiment analysis tools can be quite bad.",
+                        "On the other hand, VADER is quite bad ass!",
                         "Roger Dodger is one of the most compelling variations on this theme.",
                         "Roger Dodger is one of the least compelling variations on this theme.",
-                        "Roger Dodger is at least compelling as a variation on the theme.",
-                        "they fall in love with the product",
-                        "but then it breaks",
-                        "usually around the time the 90 day warranty expires",
-                        "the twin towers collapsed today",
-                        "However, Mr. Carter solemnly argues, his client carried out the kidnapping under orders and in the ''least offensive way possible.''"
+                        "Roger Dodger is at least compelling as a variation on the theme."
                         ]
-    sentences.extend(tricky_sentences)
-    for sentence in sentences:
-        print sentence
-        ss = sentiment(sentence)
-        print "\t" + str(ss)
+    print("----------------------------------------------------")
+    print(" - Analyze examples of tricky sentences that cause trouble to other sentiment analysis tools.")
+    print("  -- special case idioms - e.g., 'never good' vs 'never this good', or 'bad' vs 'bad ass'.")
+    print("  -- special uses of 'least' as negation versus comparison \n")
+    for sentence in tricky_sentences:
+        vs = analyzer.polarity_scores(sentence)
+        print("{:-<69} {}".format(sentence, str(vs)))
+    print("----------------------------------------------------")
     
-    print "\n\n Done!"
+    raw_input("\nPress Enter to continue the demo...\n") # for DEMO purposes...
+    
+    print("----------------------------------------------------")
+    print(" - VADER works best when analysis is done at the sentence level (but it can work on single words or entire novels).")
+    paragraph = "It was one of the worst movies I've seen, despite good reviews. Unbelievably bad acting!! Poor direction. VERY poor production. The movie was bad. Very bad movie. VERY BAD movie!"
+    print("  -- For example, given the following paragraph text from a hypothetical movie review:\n\t'{}'".format(paragraph))
+    print("  -- You could use NLTK to break the paragraph into sentence tokens for VADER, then average the results for the paragraph like this: \n")
+    # simple example to tokenize paragraph into sentences for VADER
+    from nltk import tokenize
+    sentence_list = tokenize.sent_tokenize(paragraph)
+    paragraphSentiments=0.0
+    for sentence in sentence_list:
+        vs = analyzer.polarity_scores(sentence)
+        print("{:-<69} {}".format(sentence, str(vs["compound"])))
+        paragraphSentiments += vs["compound"]
+    print("AVERAGE SENTIMENT FOR PARAGRAPH: \t" + str(round(paragraphSentiments/len(sentence_list), 4)))
+    print("----------------------------------------------------")
+    
+    raw_input("\nPress Enter to continue the demo...\n") # for DEMO purposes...
+        
+    print("----------------------------------------------------")
+    print(" - Analyze sentiment of IMAGES/VIDEO data based on annotation 'tags' or image labels. \n")
+    conceptList = ["balloons", "cake", "candles", "happy birthday", "friends", "laughing", "smiling", "party"]
+    conceptSentiments=0.0
+    for concept in conceptList:
+        vs = analyzer.polarity_scores(concept)
+        print("{:-<15} {}".format(concept, str(vs['compound'])))
+        conceptSentiments += vs["compound"]
+    print("AVERAGE SENTIMENT OF TAGS/LABELS: \t" + str(round(conceptSentiments/len(conceptList), 4)))
+    print
+    conceptList = ["riot", "fire", "fight", "blood", "mob", "war", "police", "tear gas"]
+    conceptSentiments=0.0
+    for concept in conceptList:
+        vs = analyzer.polarity_scores(concept)
+        print("{:-<15} {}".format(concept, str(vs['compound'])))
+        conceptSentiments += vs["compound"]
+    print("AVERAGE SENTIMENT OF TAGS/LABELS: \t" + str(round(conceptSentiments/len(conceptList), 4)))
+    print("----------------------------------------------------")
+    
+    raw_input("\nPress Enter to continue the demo...") # for DEMO purposes...
+    
+    do_translate = raw_input("\nWould you like to run VADER demo examples with NON-ENGLISH text? (Note: requires Internet access) \n Type 'y' or 'n', then press Enter: ")
+    if do_translate.lower().lstrip() == 'y':
+        print("/n----------------------------------------------------")
+        print(" - Analyze sentiment of NON ENGLISH text...for example:")
+        print("  -- French, German, Spanish, Italian, Russian, Japanese, Arabic, Chinese")
+        print("  -- many other languages supported. \n")
+        languages = ["English", "French", "German", "Spanish", "Italian", "Russian", "Japanese", "Arabic", "Chinese"]
+        language_codes = ["en", "fr", "de", "es", "it", "ru", "ja", "ar", "zh"]
+        nonEnglish_sentences = ["I'm surprised to see just how amazingly helpful VADER is!",
+                                "Je suis surpris de voir juste comment incroyablement utile VADER est!",
+                                "Ich bin überrascht zu sehen, nur wie erstaunlich nützlich VADER!",
+                                "Me sorprende ver sólo cómo increíblemente útil VADER!",
+                                "Sono sorpreso di vedere solo come incredibilmente utile VADER è!",
+                                "Я удивлен увидеть, как раз как удивительно полезно ВЕЙДЕРА!",
+                                "私はちょうどどのように驚くほど役に立つベイダーを見て驚いています!",
+                                "أنا مندهش لرؤية فقط كيف مثير للدهشة فيدر فائدة!",
+                                "惊讶地看到有用维德是的只是如何令人惊讶了 ！"
+                                ]
+        for sentence in nonEnglish_sentences:
+            u_sentence = unicode(sentence, "UTF-8") 
+            to_lang="en"
+            from_lang=language_codes[nonEnglish_sentences.index(sentence)]
+            if (from_lang == "en") or (from_lang == "en-US"):
+                translation = u_sentence
+                translator_name = "No translation needed"
+            else: # please note usage limits for My Memory Translation Service:   http://mymemory.translated.net/doc/usagelimits.php
+                # using   MY MEMORY NET   http://mymemory.translated.net
+                api_url = "http://mymemory.translated.net/api/get?q={}&langpair={}|{}".format(u_sentence.encode("UTF-8"), from_lang, to_lang)
+                hdrs ={'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
+                       'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                       'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3',
+                       'Accept-Encoding': 'none',
+                       'Accept-Language': 'en-US,en;q=0.8',
+                       'Connection': 'keep-alive'}
+                response = requests.get(api_url, headers=hdrs)
+                response_json = json.loads(response.text)
+                translation = response_json["responseData"]["translatedText"]
+                translator_name = "MemoryNet Translation Service"
+            vs = analyzer.polarity_scores(translation)
+            print("- {: <8}: {: <69}\t {} ({})".format(languages[nonEnglish_sentences.index(sentence)], sentence, str(vs['compound']), translator_name))
+        print("----------------------------------------------------")
+
+    print("\n\n Demo Done!")
