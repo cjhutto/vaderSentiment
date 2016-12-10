@@ -15,8 +15,10 @@ setup(
   name = 'vaderSentiment',
   #packages = ['vaderSentiment'], # this must be the same as the name above
   packages = find_packages(exclude=['tests*']), # a better way to do it than the line above -- this way no typo/transpo errors
+  package_dir={'': 'vaderSentiment'},
+  package_data={'': ['*.txt']},
   include_package_data=True,
-  version = '2.2',
+  version = '2.3',
   description = 'VADER Sentiment Analysis. VADER (Valence Aware Dictionary and sEntiment Reasoner) is a lexicon and rule-based sentiment analysis tool that is specifically attuned to sentiments expressed in social media, and works well on texts from other domains.',
   long_description=read("README.rst"),
   author = 'C.J. Hutto',
