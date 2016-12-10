@@ -121,7 +121,8 @@ The package here includes **PRIMARY RESOURCES** (items 1-3) as well as additiona
 Python Code EXAMPLE:
 ====================================
 
-** For a more complete demo, run ``python vaderSentiment.py`` **
+** For a more complete demo, point your terminal to the module directory (e.g., ``\Python3x\lib\site-packages\vaderSentiment``) and then run ``python vaderSentiment.py``. **
+If you have access to the Internet, the demo will also show how VADER can work with translating non-English text.
 
 ::
 
