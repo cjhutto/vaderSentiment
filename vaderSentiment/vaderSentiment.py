@@ -13,6 +13,8 @@ Weblogs and Social Media (ICWSM-14). Ann Arbor, MI, June 2014.
 
 import math, re, string, requests, json
 from itertools import product
+from inspect import getsourcefile
+from os.path import abspath, join, dirname
 
 ##Constants##
 
@@ -190,11 +192,11 @@ class SentimentIntensityAnalyzer(object):
     """
     Give a sentiment intensity score to sentences.
     """
-    #def __init__(self, lexicon_file="sentiment/vader_lexicon.zip/vader_lexicon/vader_lexicon.txt"):
-    def __init__(self, lexicon_file="lexicon/vader_lexicon.txt"):
-        #self.lexicon_file = nltk.data.load(lexicon_file)
-        with open(lexicon_file) as f:
-            self.lexicon_file = f.read()
+    def __init__(self, lexicon_file="vader_lexicon.txt"):
+        _this_module_file_path_ = abspath(getsourcefile(lambda:0))
+        lexicon_full_filepath = join(dirname(_this_module_file_path_), lexicon_file)
+        with open(lexicon_full_filepath) as f:
+            self.lexicon_full_filepath = f.read()
         self.lexicon = self.make_lex_dict()
 
     def make_lex_dict(self):
@@ -202,7 +204,7 @@ class SentimentIntensityAnalyzer(object):
         Convert lexicon file to a dictionary
         """
         lex_dict = {}
-        for line in self.lexicon_file.split('\n'):
+        for line in self.lexicon_full_filepath.split('\n'):
             (word, measure) = line.strip().split('\t')[0:2]
             lex_dict[word] = float(measure)
         return lex_dict
@@ -537,7 +539,7 @@ if __name__ == '__main__':
         print("{:-<15} {}".format(concept, str(vs['compound'])))
         conceptSentiments += vs["compound"]
     print("AVERAGE SENTIMENT OF TAGS/LABELS: \t" + str(round(conceptSentiments/len(conceptList), 4)))
-    print
+    print("\t")
     conceptList = ["riot", "fire", "fight", "blood", "mob", "war", "police", "tear gas"]
     conceptSentiments=0.0
     for concept in conceptList:
