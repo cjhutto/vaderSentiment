@@ -487,7 +487,7 @@ if __name__ == '__main__':
      you want multidimensional measures of sentiment for a given sentence.""")
     print("----------------------------------------------------")
     
-    raw_input("\nPress Enter to continue the demo...\n") # for DEMO purposes...
+    input("\nPress Enter to continue the demo...\n") # for DEMO purposes...
     
     tricky_sentences = ["Sentiment analysis has never been good.",
                         "Sentiment analysis has never been this good!",
@@ -508,7 +508,7 @@ if __name__ == '__main__':
         print("{:-<69} {}".format(sentence, str(vs)))
     print("----------------------------------------------------")
     
-    raw_input("\nPress Enter to continue the demo...\n") # for DEMO purposes...
+    input("\nPress Enter to continue the demo...\n") # for DEMO purposes...
     
     print("----------------------------------------------------")
     print(" - VADER works best when analysis is done at the sentence level (but it can work on single words or entire novels).")
@@ -526,7 +526,7 @@ if __name__ == '__main__':
     print("AVERAGE SENTIMENT FOR PARAGRAPH: \t" + str(round(paragraphSentiments/len(sentence_list), 4)))
     print("----------------------------------------------------")
     
-    raw_input("\nPress Enter to continue the demo...\n") # for DEMO purposes...
+    input("\nPress Enter to continue the demo...\n") # for DEMO purposes...
         
     print("----------------------------------------------------")
     print(" - Analyze sentiment of IMAGES/VIDEO data based on annotation 'tags' or image labels. \n")
@@ -547,9 +547,9 @@ if __name__ == '__main__':
     print("AVERAGE SENTIMENT OF TAGS/LABELS: \t" + str(round(conceptSentiments/len(conceptList), 4)))
     print("----------------------------------------------------")
     
-    raw_input("\nPress Enter to continue the demo...") # for DEMO purposes...
+    ("\nPress Enter to continue the demo...") # for DEMO purposes...
     
-    do_translate = raw_input("\nWould you like to run VADER demo examples with NON-ENGLISH text? (Note: requires Internet access) \n Type 'y' or 'n', then press Enter: ")
+    do_translate = input("\nWould you like to run VADER demo examples with NON-ENGLISH text? (Note: requires Internet access) \n Type 'y' or 'n', then press Enter: ")
     if do_translate.lower().lstrip() == 'y':
         print("/n----------------------------------------------------")
         print(" - Analyze sentiment of NON ENGLISH text...for example:")
