@@ -121,7 +121,10 @@ The package here includes **PRIMARY RESOURCES** (items 1-3) as well as additiona
 Python Code EXAMPLE:
 ====================================
 
-** For a more complete demo, point your terminal to the module directory (e.g., ``\Python3x\lib\site-packages\vaderSentiment``) and then run ``python vaderSentiment.py``. **
+**For a more complete demo, point your terminal to the module directory (e.g., ``\Python3x\lib\site-packages\vaderSentiment``) and then run ``python vaderSentiment.py``.**
+
+The demo has more examples of tricky sentences that confuse other sentiment analysis tools. It also demoonstrates how VADER can work in conjunction with NLTK to do sentiment analysis on longer texts...i.e., decomposing paragraphs, articles/reports/publications, or novels into sentence-level analysis.  It also deonstrates a concept for assessing the sentiment of images, video, or other tagged multimedia content.
+
 If you have access to the Internet, the demo will also show how VADER can work with translating non-English text.
 
 ::
@@ -153,7 +156,7 @@ If you have access to the Internet, the demo will also show how VADER can work w
         print("{:-<65} {}".format(sentence, str(vs)))
 
 
-** For a more complete demo, run ``python vaderSentiment.py`` **
+**For a more complete demo, run ``python vaderSentiment.py``**
 
 ====================================
 Output for the above example code
