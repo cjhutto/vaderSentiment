@@ -15,7 +15,6 @@ setup(
   name = 'vaderSentiment',
   #packages = ['vaderSentiment'], # this must be the same as the name above
   packages = find_packages(exclude=['tests*']), # a better way to do it than the line above -- this way no typo/transpo errors
-  package_dir={'': 'vaderSentiment'},
   package_data={'': ['*.txt']},
   include_package_data=True,
   version = '2.3',
