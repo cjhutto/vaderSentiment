@@ -4,7 +4,7 @@ setup(
   #packages = ['vaderSentiment'], # this must be the same as the name above
   packages = find_packages(exclude=['tests*']), # a better way to do it than the line above -- this way no typo/transpo errors
   include_package_data=True,
-  version = '2.0',
+  version = '2.1',
   description = 'VADER Sentiment Analysis. VADER (Valence Aware Dictionary and sEntiment Reasoner) is a lexicon and rule-based sentiment analysis tool that is specifically attuned to sentiments expressed in social media, and works well on texts from other domains.',
   author = 'C.J. Hutto',
   author_email = 'cjhutto@gatech.edu',
