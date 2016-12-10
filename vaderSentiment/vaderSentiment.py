@@ -568,15 +568,14 @@ if __name__ == '__main__':
                                 "惊讶地看到有用维德是的只是如何令人惊讶了 ！"
                                 ]
         for sentence in nonEnglish_sentences:
-            u_sentence = unicode(sentence, "UTF-8") 
             to_lang="en"
             from_lang=language_codes[nonEnglish_sentences.index(sentence)]
             if (from_lang == "en") or (from_lang == "en-US"):
-                translation = u_sentence
+                translation = sentence
                 translator_name = "No translation needed"
             else: # please note usage limits for My Memory Translation Service:   http://mymemory.translated.net/doc/usagelimits.php
                 # using   MY MEMORY NET   http://mymemory.translated.net
-                api_url = "http://mymemory.translated.net/api/get?q={}&langpair={}|{}".format(u_sentence.encode("UTF-8"), from_lang, to_lang)
+                api_url = "http://mymemory.translated.net/api/get?q={}&langpair={}|{}".format(sentence, from_lang, to_lang)
                 hdrs ={'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
                        'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3',
