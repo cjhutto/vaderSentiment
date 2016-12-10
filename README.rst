@@ -33,7 +33,9 @@ Installation
 There are a couple of ways to install and use VADER sentiment:  
 
 #. The simplest is to use the command line to do an installation from PyPI using pip, e.g., 
-   ``> pip install vaderSentiment``
+   |``> pip install vaderSentiment``
+#. Or, you might already have VADER and simply need to upgrade to the latest version, e.g., 
+   |``> pip install --upgrade vaderSentiment``
 #. You could also clone the `[GitHub repository] <https://github.com/cjhutto/vaderSentiment>`_ 
 #. You could download and unzip the `[full master branch zip file] <https://github.com/cjhutto/vaderSentiment/archive/master.zip>`_ 
 
@@ -121,11 +123,11 @@ The package here includes **PRIMARY RESOURCES** (items 1-3) as well as additiona
 Python Code EXAMPLE:
 ====================================
 
-**For a more complete demo, point your terminal to the module directory (e.g., ``\Python3x\lib\site-packages\vaderSentiment``) and then run ``python vaderSentiment.py``.**
+For a **more complete demo**, point your terminal to vader's install directory (e.g., if you installed using pip, it might be ``\Python3x\lib\site-packages\vaderSentiment``), and then run ``python vaderSentiment.py``.
 
-The demo has more examples of tricky sentences that confuse other sentiment analysis tools. It also demoonstrates how VADER can work in conjunction with NLTK to do sentiment analysis on longer texts...i.e., decomposing paragraphs, articles/reports/publications, or novels into sentence-level analysis.  It also deonstrates a concept for assessing the sentiment of images, video, or other tagged multimedia content.
+The demo has more examples of tricky sentences that confuse other sentiment analysis tools. It also demonstrates how VADER can work in conjunction with NLTK to do sentiment analysis on longer texts...i.e., decomposing paragraphs, articles/reports/publications, or novels into sentence-level analysis.  It also demonstrates a concept for assessing the sentiment of images, video, or other tagged multimedia content.
 
-If you have access to the Internet, the demo will also show how VADER can work with translating non-English text.
+If you have access to the Internet, the demo will also show how VADER can work with analyzing sentiment of non-English text sentences.
 
 ::
 
