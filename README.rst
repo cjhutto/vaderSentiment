@@ -46,7 +46,7 @@ The package here includes **PRIMARY RESOURCES** (items 1-3) as well as additiona
 #. vader_icwsm2014_final.pdf
     The original paper for the data set, see citation information (above).
 
-#. vader_sentiment_lexicon.txt
+#. vader_lexicon.txt
     Empirically validated by multiple independent human judges, VADER incorporates a "gold-standard" sentiment lexicon that is especially attuned to microblog-like contexts.
 	   
     The VADER sentiment lexicon is sensitive both the **polarity** and the **intensity** of sentiments expressed in social media contexts, and is also generally applicable to sentiment analysis in other domains.
