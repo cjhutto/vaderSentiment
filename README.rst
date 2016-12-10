@@ -125,9 +125,9 @@ Python Code EXAMPLE:
 
 ::
 
-	from vaderSentiment import SentimentIntensityAnalyzer
+	from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 	#note: depending on how you installed (e.g., using source code download versus pip install), you may need to import like this:
-	#from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+	#from vaderSentiment import SentimentIntensityAnalyzer
 
     # --- examples -------
     sentences = ["VADER is smart, handsome, and funny.",      # positive sentence example
