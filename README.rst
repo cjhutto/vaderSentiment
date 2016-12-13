@@ -49,9 +49,9 @@ This README file describes the dataset of the paper:
 	|  Eighth International Conference on Weblogs and Social Media (ICWSM-14). Ann Arbor, MI, June 2014. 
  
 | For questions, please contact: 
-|   C.J. Hutto 
-|   Georgia Institute of Technology, Atlanta, GA 30032  
-|   cjhutto [at] gatech [dot] edu 
+|		C.J. Hutto 
+|		Georgia Institute of Technology, Atlanta, GA 30032  
+|		cjhutto [at] gatech [dot] edu 
  
 
 Citation Information
