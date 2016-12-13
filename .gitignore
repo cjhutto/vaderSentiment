@@ -46,8 +46,6 @@ Temporary Items
 
 # Setuptools distribution folder and setup files.
 /dist/
-setup.cfg
-setup.py
 
 # Pip build folder.
 /build/
