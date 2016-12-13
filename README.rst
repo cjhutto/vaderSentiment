@@ -194,7 +194,7 @@ If you have access to the Internet, the demo will also show how VADER can work w
         print("{:-<65} {}".format(sentence, str(vs)))
 
 
-**For a more complete demo, run ``python vaderSentiment.py``**
+For a **more complete demo**, go to the install directory and run ``python vaderSentiment.py``. (Be sure you are set to handle UTF-8 encoding in your terminal or IDE.)
 
 ====================================
 Output for the above example code
@@ -217,8 +217,6 @@ Output for the above example code
 	Today SUX!------------------------------------------------------- {'neg': 0.779, 'neu': 0.221, 'pos': 0.0, 'compound': -0.5461}
 	Today only kinda sux! But I'll get by, lol----------------------- {'neg': 0.179, 'neu': 0.569, 'pos': 0.251, 'compound': 0.2228}
 
-
-** For a more complete demo, run ``python vaderSentiment.py`` **
 
 ====================================
 About the Scoring
