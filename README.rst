@@ -72,12 +72,12 @@ Installation
 
 There are a couple of ways to install and use VADER sentiment:  
 
-|#. The simplest is to use the command line to do an installation from PyPI using pip, e.g., 
-|    ``> pip install vaderSentiment``
-|#. Or, you might already have VADER and simply need to upgrade to the latest version, e.g., 
-|    ``> pip install --upgrade vaderSentiment``
-|#. You could also clone the `[GitHub repository] <https://github.com/cjhutto/vaderSentiment>`_ 
-|#. You could download and unzip the `[full master branch zip file] <https://github.com/cjhutto/vaderSentiment/archive/master.zip>`_ 
+| #. The simplest is to use the command line to do an installation from PyPI using pip, e.g., 
+|     ``> pip install vaderSentiment``
+| #. Or, you might already have VADER and simply need to upgrade to the latest version, e.g., 
+|     ``> pip install --upgrade vaderSentiment``
+| #. You could also clone the `[GitHub repository] <https://github.com/cjhutto/vaderSentiment>`_ 
+| #. You could download and unzip the `[full master branch zip file] <https://github.com/cjhutto/vaderSentiment/archive/master.zip>`_ 
 
 .. _resources-and-dataset-descriptions:
 
