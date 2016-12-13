@@ -1,7 +1,42 @@
+====================================
 VADER-Sentiment-Analysis
 ====================================
 
 VADER (Valence Aware Dictionary and sEntiment Reasoner) is a lexicon and rule-based sentiment analysis tool that is *specifically attuned to sentiments expressed in social media*. It is fully open-sourced under the `[MIT License] <http://choosealicense.com/>`_ (we sincerely appreciate all attributions and readily accept most contributions, but please don't hold us liable).
+
+* `Features and Updates`_
+* Introduction_
+* Installation_
+* `Resources and Dataset Descriptions`_
+* `Python code example`_
+* `About the scoring`_
+
+.. _features-and-updates:
+
+Features and Updates
+------------------------------------
+Many thanks to George Berry, Ewan Klein, Pierpaolo Pantone for key contributions to make VADER better.  The new updates includes capabilities regarding:
+
+#. Refactoring for Python 3 compatibility, improved modularity, and incorporation into `[NLTK] <http://www.nltk.org/_modules/nltk/sentiment/vader.html>`_ ...many thanks to Ewan & Pierpaolo.
+#. Restructuring for much improved speed/performance, reducing the time complexity from something like O(N^4) to O(N)...many thanks to George.
+#. Simplified pip install and better support for vaderSentiment module and component import (dependency on vader_lexicon.txt file now uses automated file location discovery so you don't need to manually designate its location in the code or copy it into executing code's directory.)
+#. More complete demo in the ``__main__`` for ``vaderSentiment.py``. The demo has:
+    a. examples of typical use cases for sentiment analysis, including proper handling of sentences with:
+        - typical negations (e.g., "*not* good")
+        - use of contractions as negations (e.g., "*wasn't* very good")
+        - conventional use of **punctuation** to signal increased sentiment intensity (e.g., "Good!!!")
+        - conventional use of **word-shape** to signal emphasis (e.g., using ALL CAPS for words/phrases)
+        - using **degree modifiers** to alter sentiment intensity (e.g., intensity *boosters* such as "very" and intensity *dampeners* such as "kind of")
+        - understanding many **sentiment-laden slang** words (e.g., 'sux')
+        - understanding many sentiment-laden **slang words as modifiers** such as 'uber' or 'friggin' or 'kinda'
+        - understanding many sentiment-laden **emoticons** such as :) and :D
+        - understanding sentiment-laden **initialisms and acronyms** (for example: 'lol')
+    b. more examples of **tricky sentences** that confuse other sentiment analysis tools
+    c. example for how VADER can work in conjunction with NLTK to do **sentiment analysis on longer texts**...i.e., decomposing paragraphs, articles/reports/publications, or novels into sentence-level analyses
+    d. examples of a concept for assessing the sentiment of images, video, or other tagged **multimedia content**
+    e. if you have access to the Internet, the demo has an example of how VADER can work with analyzing sentiment of **texts in other languages** (non-English text sentences).
+
+.. _introduction:
 
 ====================================
 Introduction
@@ -17,7 +52,9 @@ For questions, please contact:
 	| C.J. Hutto 
 	| Georgia Institute of Technology, Atlanta, GA 30032  
 	| cjhutto [at] gatech [dot] edu 
-  
+ 
+.. _citation-information:
+
 ====================================
 Citation Information
 ====================================
@@ -26,6 +63,8 @@ If you use either the dataset or any of the VADER sentiment analysis tools (VADE
 
   **Hutto, C.J. & Gilbert, E.E. (2014). VADER: A Parsimonious Rule-based Model for Sentiment Analysis of Social Media Text. Eighth International Conference on Weblogs and Social Media (ICWSM-14). Ann Arbor, MI, June 2014.** 
 
+.. _installation:
+
 ====================================
 Installation
 ====================================
@@ -33,11 +72,13 @@ Installation
 There are a couple of ways to install and use VADER sentiment:  
 
 #. The simplest is to use the command line to do an installation from PyPI using pip, e.g., 
-   |``> pip install vaderSentiment``
+    ``> pip install vaderSentiment``
 #. Or, you might already have VADER and simply need to upgrade to the latest version, e.g., 
-   |``> pip install --upgrade vaderSentiment``
+    ``> pip install --upgrade vaderSentiment``
 #. You could also clone the `[GitHub repository] <https://github.com/cjhutto/vaderSentiment>`_ 
 #. You could download and unzip the `[full master branch zip file] <https://github.com/cjhutto/vaderSentiment/archive/master.zip>`_ 
+
+.. _resources-and-dataset-descriptions:
 
 ====================================
 Resources and Dataset Descriptions
@@ -118,9 +159,10 @@ The package here includes **PRIMARY RESOURCES** (items 1-3) as well as additiona
 #. Comp.Social website with more papers/research: 
     [Comp.Social](http://comp.social.gatech.edu/papers/)
 
+.. _python-code-example:
 
 ====================================
-Python Code EXAMPLE:
+Python Code Example
 ====================================
 
 For a **more complete demo**, point your terminal to vader's install directory (e.g., if you installed using pip, it might be ``\Python3x\lib\site-packages\vaderSentiment``), and then run ``python vaderSentiment.py``.
@@ -184,10 +226,11 @@ Output for the above example code
 
 ** For a more complete demo, run ``python vaderSentiment.py`` **
 
+.. _about-the-scoring:
+
 ====================================
 About the scoring
 ====================================
 
 * The ``compound`` score is computed by summing the valence scores of each word in the lexicon, adjusted according to the rules, and then normalized to be between -1 (most extreme negative) and +1 (most extreme positive). This is the most useful metric if you want a single unidimensional measure of sentiment for a given sentence. Calling it a 'normalized, weighted composite score' is accurate.
 * The ``pos``, ``neu``, and ``neg`` scores are ratios for proportions of text that fall in each category (so these should all add up to be 1... or close to it with float operation).  These are the most useful metrics if you want multidimensional measures of sentiment for a given sentence.
-
