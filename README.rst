@@ -9,10 +9,8 @@ VADER (Valence Aware Dictionary and sEntiment Reasoner) is a lexicon and rule-ba
 * `Citation Information`_
 * Installation_
 * `Resources and Dataset Descriptions`_
-* `Python code example`_
-* `About the scoring`_
-
-.. _features-and-updates:
+* `Python Code Example`_
+* `About the Scoring`_
 
 Features and Updates
 ------------------------------------
@@ -37,8 +35,6 @@ Many thanks to George Berry, Ewan Klein, Pierpaolo Pantone for key contributions
     * examples of a concept for assessing the sentiment of images, video, or other tagged **multimedia content**
     * if you have access to the Internet, the demo has an example of how VADER can work with analyzing sentiment of **texts in other languages** (non-English text sentences).
 
-.. _introduction:
-
 ====================================
 Introduction
 ====================================
@@ -54,8 +50,6 @@ This README file describes the dataset of the paper:
 	| Georgia Institute of Technology, Atlanta, GA 30032  
 	| cjhutto [at] gatech [dot] edu 
  
-.. _citation-information:
-
 ====================================
 Citation Information
 ====================================
@@ -64,8 +58,6 @@ If you use either the dataset or any of the VADER sentiment analysis tools (VADE
 
   **Hutto, C.J. & Gilbert, E.E. (2014). VADER: A Parsimonious Rule-based Model for Sentiment Analysis of Social Media Text. Eighth International Conference on Weblogs and Social Media (ICWSM-14). Ann Arbor, MI, June 2014.** 
 
-.. _installation:
-
 ====================================
 Installation
 ====================================
@@ -73,13 +65,11 @@ Installation
 There are a couple of ways to install and use VADER sentiment:  
 
 #. The simplest is to use the command line to do an installation from PyPI using pip, e.g., 
-|    ``> pip install vaderSentiment``
+    ``> pip install vaderSentiment``
 #. Or, you might already have VADER and simply need to upgrade to the latest version, e.g., 
-|    ``> pip install --upgrade vaderSentiment``
+    ``> pip install --upgrade vaderSentiment``
 #. You could also clone the `[GitHub repository] <https://github.com/cjhutto/vaderSentiment>`_ 
 #. You could download and unzip the `[full master branch zip file] <https://github.com/cjhutto/vaderSentiment/archive/master.zip>`_ 
-
-.. _resources-and-dataset-descriptions:
 
 ====================================
 Resources and Dataset Descriptions
@@ -160,8 +150,6 @@ The package here includes **PRIMARY RESOURCES** (items 1-3) as well as additiona
 #. Comp.Social website with more papers/research: 
     [Comp.Social](http://comp.social.gatech.edu/papers/)
 
-.. _python-code-example:
-
 ====================================
 Python Code Example
 ====================================
@@ -227,10 +215,8 @@ Output for the above example code
 
 ** For a more complete demo, run ``python vaderSentiment.py`` **
 
-.. _about-the-scoring:
-
 ====================================
-About the scoring
+About the Scoring
 ====================================
 
 * The ``compound`` score is computed by summing the valence scores of each word in the lexicon, adjusted according to the rules, and then normalized to be between -1 (most extreme negative) and +1 (most extreme positive). This is the most useful metric if you want a single unidimensional measure of sentiment for a given sentence. Calling it a 'normalized, weighted composite score' is accurate.
