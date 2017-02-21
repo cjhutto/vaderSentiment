@@ -1,0 +1,3 @@
+include *.txt *.py *.rst
+recursive-include vaderSentiment *.txt *.py
+recursive-include additional_resources *.tar.gz
