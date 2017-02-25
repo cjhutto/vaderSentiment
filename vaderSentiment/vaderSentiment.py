@@ -67,7 +67,8 @@ BOOSTER_DICT = \
 
 # check for special case idioms using a sentiment-laden keyword known to VADER
 SPECIAL_CASE_IDIOMS = {"the shit": 3, "the bomb": 3, "bad ass": 1.5, "yeah right": -2,
-                       "cut the mustard": 2, "kiss of death": -1.5, "hand to mouth": -2}
+                       "cut the mustard": 2, "kiss of death": -1.5, "hand to mouth": -2, "all time high" : 3, "price hike" : -1, "rate hike" : -2,
+			"high debt" : -2, "high fiscal deficit" : -3}
 
 
 ##Static methods##
@@ -205,8 +206,9 @@ class SentimentIntensityAnalyzer(object):
         """
         lex_dict = {}
         for line in self.lexicon_full_filepath.split('\n'):
-            (word, measure) = line.strip().split('\t')[0:2]
-            lex_dict[word] = float(measure)
+		if line != '':
+            		(word, measure) = line.strip().split('\t')[0:2]
+            		lex_dict[word] = float(measure)
         return lex_dict
 
     def polarity_scores(self, text):
