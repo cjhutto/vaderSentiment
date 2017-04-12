@@ -222,7 +222,8 @@ Output for the above example code
 About the Scoring
 ====================================
 
-* The ``compound`` score is computed by summing the valence scores of each word in the lexicon, adjusted according to the rules, and then normalized to be between -1 (most extreme negative) and +1 (most extreme positive). This is the most useful metric if you want a single unidimensional measure of sentiment for a given sentence. Calling it a 'normalized, weighted composite score' is accurate.  
+* The ``compound`` score is computed by summing the valence scores of each word in the lexicon, adjusted according to the rules, and then normalized to be between -1 (most extreme negative) and +1 (most extreme positive). This is the most useful metric if you want a single unidimensional measure of sentiment for a given sentence. Calling it a 'normalized, weighted composite score' is accurate. 
+ 
   It is also useful for researchers who would like to set standardized thresholds for classifying sentences as either positive, neutral, or negative.  
   Typical threshold values (used in the literature cited on this page) are:
 
