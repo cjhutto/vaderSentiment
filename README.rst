@@ -1,5 +1,5 @@
 ====================================
-VADER-Sentiment-Analysis
+VADER-Sentiment-Analysis for Social news, Political news and Stock News
 ====================================
 
 VADER (Valence Aware Dictionary and sEntiment Reasoner) is a lexicon and rule-based sentiment analysis tool that is *specifically attuned to sentiments expressed in social media*. It is fully open-sourced under the `[MIT License] <http://choosealicense.com/>`_ (we sincerely appreciate all attributions and readily accept most contributions, but please don't hold us liable).
