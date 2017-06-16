@@ -98,7 +98,7 @@ def normalize(score, alpha=15):
     approximates the max expected value
     """
     norm_score = score/math.sqrt((score*score) + alpha)
-    if norm_score < -1.0: 
+    if norm_score < -1.0:
         return -1.0
     elif norm_score > 1.0:
         return 1.0
@@ -204,7 +204,7 @@ class SentimentIntensityAnalyzer(object):
         Convert lexicon file to a dictionary
         """
         lex_dict = {}
-        for line in self.lexicon_full_filepath.split('\n'):
+        for line in self.lexicon_full_filepath.rstrip('\n').split('\n'):
             (word, measure) = line.strip().split('\t')[0:2]
             lex_dict[word] = float(measure)
         return lex_dict
@@ -232,7 +232,7 @@ class SentimentIntensityAnalyzer(object):
             sentiments = self.sentiment_valence(valence, sentitext, item, i, sentiments)
 
         sentiments = self._but_check(words_and_emoticons, sentiments)
-        
+
         valence_dict = self.score_valence(sentiments, text)
 
         return valence_dict
@@ -460,9 +460,9 @@ if __name__ == '__main__':
                 "Today SUX!",    #  negative slang with capitalization emphasis
                 "Today only kinda sux! But I'll get by, lol" # mixed sentiment example with slang and constrastive conjunction "but"
                  ]
-    
+
     analyzer = SentimentIntensityAnalyzer()
-    
+
     print("----------------------------------------------------")
     print(" - Analyze typical example cases, including handling of:")
     print("  -- negations")
@@ -480,17 +480,17 @@ if __name__ == '__main__':
         print("{:-<65} {}".format(sentence, str(vs)))
     print("----------------------------------------------------")
     print(" - About the scoring: ")
-    print("""  -- The 'compound' score is computed by summing the valence scores of each word in the lexicon, adjusted 
-     according to the rules, and then normalized to be between -1 (most extreme negative) and +1 (most extreme positive). 
-     This is the most useful metric if you want a single unidimensional measure of sentiment for a given sentence.  
+    print("""  -- The 'compound' score is computed by summing the valence scores of each word in the lexicon, adjusted
+     according to the rules, and then normalized to be between -1 (most extreme negative) and +1 (most extreme positive).
+     This is the most useful metric if you want a single unidimensional measure of sentiment for a given sentence.
      Calling it a 'normalized, weighted composite score' is accurate.""")
-    print("""  -- The 'pos', 'neu', and 'neg' scores are ratios for proportions of text that fall in each category (so these   
-     should all add up to be 1... or close to it with float operation).  These are the most useful metrics if 
+    print("""  -- The 'pos', 'neu', and 'neg' scores are ratios for proportions of text that fall in each category (so these
+     should all add up to be 1... or close to it with float operation).  These are the most useful metrics if
      you want multidimensional measures of sentiment for a given sentence.""")
     print("----------------------------------------------------")
-    
+
     input("\nPress Enter to continue the demo...\n") # for DEMO purposes...
-    
+
     tricky_sentences = ["Sentiment analysis has never been good.",
                         "Sentiment analysis has never been this good!",
                         "Most automated sentiment analysis tools are shit.",
@@ -509,9 +509,9 @@ if __name__ == '__main__':
         vs = analyzer.polarity_scores(sentence)
         print("{:-<69} {}".format(sentence, str(vs)))
     print("----------------------------------------------------")
-    
+
     input("\nPress Enter to continue the demo...\n") # for DEMO purposes...
-    
+
     print("----------------------------------------------------")
     print(" - VADER works best when analysis is done at the sentence level (but it can work on single words or entire novels).")
     paragraph = "It was one of the worst movies I've seen, despite good reviews. Unbelievably bad acting!! Poor direction. VERY poor production. The movie was bad. Very bad movie. VERY BAD movie!"
@@ -527,9 +527,9 @@ if __name__ == '__main__':
         paragraphSentiments += vs["compound"]
     print("AVERAGE SENTIMENT FOR PARAGRAPH: \t" + str(round(paragraphSentiments/len(sentence_list), 4)))
     print("----------------------------------------------------")
-    
+
     input("\nPress Enter to continue the demo...\n") # for DEMO purposes...
-        
+
     print("----------------------------------------------------")
     print(" - Analyze sentiment of IMAGES/VIDEO data based on annotation 'tags' or image labels. \n")
     conceptList = ["balloons", "cake", "candles", "happy birthday", "friends", "laughing", "smiling", "party"]
@@ -548,9 +548,9 @@ if __name__ == '__main__':
         conceptSentiments += vs["compound"]
     print("AVERAGE SENTIMENT OF TAGS/LABELS: \t" + str(round(conceptSentiments/len(conceptList), 4)))
     print("----------------------------------------------------")
-    
+
     ("\nPress Enter to continue the demo...") # for DEMO purposes...
-    
+
     do_translate = input("\nWould you like to run VADER demo examples with NON-ENGLISH text? (Note: requires Internet access) \n Type 'y' or 'n', then press Enter: ")
     if do_translate.lower().lstrip() == 'y':
         print("/n----------------------------------------------------")
