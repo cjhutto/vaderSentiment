@@ -102,6 +102,7 @@ The package here includes **PRIMARY RESOURCES** (items 1-3) as well as additiona
     * sentiment-related acronyms and initialisms (e.g., LOL and WTF are both examples of sentiment-laden initialisms)
     * commonly used slang with sentiment value (e.g., nah, meh and giggly). 
 	
+	Next, we assessed the general applicability of each feature candidate to sentiment expressions. We used a wisdom-of-the-crowd (WotC) approach (Surowiecki, 2004) to acquire a valid point estimate for the sentiment valence (intensity) of each context-free candidate feature. 
 
 #. vaderSentiment.py
     The Python code for the rule-based sentiment analysis engine. Implements the grammatical and syntactical rules described in the paper, incorporating empirically derived quantifications for the impact of each rule on the perceived intensity of sentiment in sentence-level text. Importantly, these heuristics go beyond what would normally be captured in a typical bag-of-words model. They incorporate **word-order sensitive relationships** between terms. For example, degree modifiers (also called intensifiers, booster words, or degree adverbs) impact sentiment intensity by either increasing or decreasing the intensity. Consider these examples:
