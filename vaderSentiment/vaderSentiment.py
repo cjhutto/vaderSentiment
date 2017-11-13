@@ -220,9 +220,8 @@ class SentimentIntensityAnalyzer(object):
 
         sentiments = []
         words_and_emoticons = sentitext.words_and_emoticons
-        for item in words_and_emoticons:
+        for i, item in enumerate(words_and_emoticons):
             valence = 0
-            i = words_and_emoticons.index(item)
             if (i < len(words_and_emoticons) - 1 and item.lower() == "kind" and \
                 words_and_emoticons[i+1].lower() == "of") or \
                 item.lower() in BOOSTER_DICT:
