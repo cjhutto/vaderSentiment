@@ -15,12 +15,10 @@ import math, re, string, requests, json
 from itertools import product
 from inspect import getsourcefile
 from os.path import abspath, join, dirname
+import importlib
 
 ##Constants##
 
-# (empirically derived mean sentiment intensity rating increase for booster words)
-B_INCR = 0.293
-B_DECR = -0.293
 
 # (empirically derived mean sentiment intensity rating increase for using
 # ALLCAPs to emphasize a word)
@@ -33,51 +31,16 @@ REGEX_REMOVE_PUNCTUATION = re.compile('[%s]' % re.escape(string.punctuation))
 
 PUNC_LIST = [".", "!", "?", ",", ";", ":", "-", "'", "\"",
              "!!", "!!!", "??", "???", "?!?", "!?!", "?!?!", "!?!?"]
-NEGATE = \
-["aint", "arent", "cannot", "cant", "couldnt", "darent", "didnt", "doesnt",
- "ain't", "aren't", "can't", "couldn't", "daren't", "didn't", "doesn't",
- "dont", "hadnt", "hasnt", "havent", "isnt", "mightnt", "mustnt", "neither",
- "don't", "hadn't", "hasn't", "haven't", "isn't", "mightn't", "mustn't",
- "neednt", "needn't", "never", "none", "nope", "nor", "not", "nothing", "nowhere",
- "oughtnt", "shant", "shouldnt", "uhuh", "wasnt", "werent",
- "oughtn't", "shan't", "shouldn't", "uh-uh", "wasn't", "weren't",
- "without", "wont", "wouldnt", "won't", "wouldn't", "rarely", "seldom", "despite"]
-
-# booster/dampener 'intensifiers' or 'degree adverbs'
-# http://en.wiktionary.org/wiki/Category:English_degree_adverbs
-
-BOOSTER_DICT = \
-{"absolutely": B_INCR, "amazingly": B_INCR, "awfully": B_INCR, "completely": B_INCR, "considerably": B_INCR,
- "decidedly": B_INCR, "deeply": B_INCR, "effing": B_INCR, "enormously": B_INCR,
- "entirely": B_INCR, "especially": B_INCR, "exceptionally": B_INCR, "extremely": B_INCR,
- "fabulously": B_INCR, "flipping": B_INCR, "flippin": B_INCR,
- "fricking": B_INCR, "frickin": B_INCR, "frigging": B_INCR, "friggin": B_INCR, "fully": B_INCR, "fucking": B_INCR,
- "greatly": B_INCR, "hella": B_INCR, "highly": B_INCR, "hugely": B_INCR, "incredibly": B_INCR,
- "intensely": B_INCR, "majorly": B_INCR, "more": B_INCR, "most": B_INCR, "particularly": B_INCR,
- "purely": B_INCR, "quite": B_INCR, "really": B_INCR, "remarkably": B_INCR,
- "so": B_INCR, "substantially": B_INCR,
- "thoroughly": B_INCR, "totally": B_INCR, "tremendously": B_INCR,
- "uber": B_INCR, "unbelievably": B_INCR, "unusually": B_INCR, "utterly": B_INCR,
- "very": B_INCR,
- "almost": B_DECR, "barely": B_DECR, "hardly": B_DECR, "just enough": B_DECR,
- "kind of": B_DECR, "kinda": B_DECR, "kindof": B_DECR, "kind-of": B_DECR,
- "less": B_DECR, "little": B_DECR, "marginally": B_DECR, "occasionally": B_DECR, "partly": B_DECR,
- "scarcely": B_DECR, "slightly": B_DECR, "somewhat": B_DECR,
- "sort of": B_DECR, "sorta": B_DECR, "sortof": B_DECR, "sort-of": B_DECR}
-
-# check for special case idioms using a sentiment-laden keyword known to VADER
-SPECIAL_CASE_IDIOMS = {"the shit": 3, "the bomb": 3, "bad ass": 1.5, "yeah right": -2,
-                       "cut the mustard": 2, "kiss of death": -1.5, "hand to mouth": -2}
 
 
 ##Static methods##
 
-def negated(input_words, include_nt=True):
+def negated(negate_list, input_words, include_nt=True):
     """
     Determine if input contains negation words
     """
     neg_words = []
-    neg_words.extend(NEGATE)
+    neg_words.extend(negate_list)
     for word in neg_words:
         if word in input_words:
             return True
@@ -98,7 +61,7 @@ def normalize(score, alpha=15):
     approximates the max expected value
     """
     norm_score = score/math.sqrt((score*score) + alpha)
-    if norm_score < -1.0: 
+    if norm_score < -1.0:
         return -1.0
     elif norm_score > 1.0:
         return 1.0
@@ -123,15 +86,15 @@ def allcap_differential(words):
     return is_different
 
 
-def scalar_inc_dec(word, valence, is_cap_diff):
+def scalar_inc_dec(booster_dict, word, valence, is_cap_diff):
     """
     Check if the preceding words increase, decrease, or negate/nullify the
     valence
     """
     scalar = 0.0
     word_lower = word.lower()
-    if word_lower in BOOSTER_DICT:
-        scalar = BOOSTER_DICT[word_lower]
+    if word_lower in booster_dict:
+        scalar = booster_dict[word_lower]
         if valence < 0:
             scalar *= -1
         #check if booster/dampener word is in ALLCAPS (while others aren't)
@@ -192,12 +155,32 @@ class SentimentIntensityAnalyzer(object):
     """
     Give a sentiment intensity score to sentences.
     """
-    def __init__(self, lexicon_file="vader_lexicon.txt"):
+    def __init__(self, lang='en', lexicon_file=None):
         _this_module_file_path_ = abspath(getsourcefile(lambda:0))
+
+        if lang not in ['en', 'es', 'ca']:
+            raise Exception("Language value is not valid")
+        if lexicon_file is None:
+            lexicon_file = "lang/{lang}/lexicon.txt".format(lang=lang)
+        self.lang=lang
+        try:
+            language = importlib.import_module('vaderSentiment.lang.%s.language' % lang, package='language')
+        except ImportError:
+            msg = "Can't import language %s from vaderSentiment.lang."
+            raise ImportError(msg % lang)
+
+        self.booster_dict = language.BOOSTER_DICT
+        self.negate_list = language.NEGATE
+        self.special_case_idioms = language.SPECIAL_CASE_IDIOMS
+        self.others = language.OTHERS_DICT
+        self.b_decr = language.B_DECR
+
         lexicon_full_filepath = join(dirname(_this_module_file_path_), lexicon_file)
         with open(lexicon_full_filepath, encoding='utf-8') as f:
             self.lexicon_full_filepath = f.read()
         self.lexicon = self.make_lex_dict()
+
+
 
     def make_lex_dict(self):
         """
@@ -223,16 +206,16 @@ class SentimentIntensityAnalyzer(object):
         for item in words_and_emoticons:
             valence = 0
             i = words_and_emoticons.index(item)
-            if (i < len(words_and_emoticons) - 1 and item.lower() == "kind" and \
-                words_and_emoticons[i+1].lower() == "of") or \
-                item.lower() in BOOSTER_DICT:
+            if (i < len(words_and_emoticons) - 1 and item.lower() == self.others["KIND"] and \
+                words_and_emoticons[i+1].lower() == self.others["OF"]) or \
+                item.lower() in self.booster_dict:
                 sentiments.append(valence)
                 continue
 
             sentiments = self.sentiment_valence(valence, sentitext, item, i, sentiments)
 
         sentiments = self._but_check(words_and_emoticons, sentiments)
-        
+
         valence_dict = self.score_valence(sentiments, text)
 
         return valence_dict
@@ -257,7 +240,7 @@ class SentimentIntensityAnalyzer(object):
                     # dampen the scalar modifier of preceding words and emoticons
                     # (excluding the ones that immediately preceed the item) based
                     # on their distance from the current item.
-                    s = scalar_inc_dec(words_and_emoticons[i-(start_i+1)], valence, is_cap_diff)
+                    s = scalar_inc_dec(self.booster_dict, words_and_emoticons[i-(start_i+1)], valence, is_cap_diff)
                     if start_i == 1 and s != 0:
                         s = s*0.95
                     if start_i == 2 and s != 0:
@@ -282,11 +265,12 @@ class SentimentIntensityAnalyzer(object):
     def _least_check(self, valence, words_and_emoticons, i):
         # check for negation case using "least"
         if i > 1 and words_and_emoticons[i-1].lower() not in self.lexicon \
-           and words_and_emoticons[i-1].lower() == "least":
-            if words_and_emoticons[i-2].lower() != "at" and words_and_emoticons[i-2].lower() != "very":
+           and words_and_emoticons[i-1].lower() == self.others["LEAST"]:
+            if words_and_emoticons[i-2].lower() != self.others["AT"] \
+                and words_and_emoticons[i-2].lower() != self.others["VERY"]:
                 valence = valence*N_SCALAR
         elif i > 0 and words_and_emoticons[i-1].lower() not in self.lexicon \
-             and words_and_emoticons[i-1].lower() == "least":
+             and words_and_emoticons[i-1].lower() == self.others["LEAST"]:
             valence = valence*N_SCALAR
         return valence
 
@@ -323,41 +307,41 @@ class SentimentIntensityAnalyzer(object):
         sequences = [onezero, twoonezero, twoone, threetwoone, threetwo]
 
         for seq in sequences:
-            if seq in SPECIAL_CASE_IDIOMS:
-                valence = SPECIAL_CASE_IDIOMS[seq]
+            if seq in self.special_case_idioms:
+                valence = self.special_case_idioms[seq]
                 break
 
         if len(words_and_emoticons)-1 > i:
             zeroone = "{0} {1}".format(words_and_emoticons[i], words_and_emoticons[i+1])
-            if zeroone in SPECIAL_CASE_IDIOMS:
-                valence = SPECIAL_CASE_IDIOMS[zeroone]
+            if zeroone in self.special_case_idioms:
+                valence = self.special_case_idioms[zeroone]
         if len(words_and_emoticons)-1 > i+1:
             zeroonetwo = "{0} {1} {2}".format(words_and_emoticons[i], words_and_emoticons[i+1], words_and_emoticons[i+2])
-            if zeroonetwo in SPECIAL_CASE_IDIOMS:
-                valence = SPECIAL_CASE_IDIOMS[zeroonetwo]
+            if zeroonetwo in self.special_case_idioms:
+                valence = self.special_case_idioms[zeroonetwo]
 
         # check for booster/dampener bi-grams such as 'sort of' or 'kind of'
-        if threetwo in BOOSTER_DICT or twoone in BOOSTER_DICT:
-            valence = valence+B_DECR
+        if threetwo in self.booster_dict or twoone in self.booster_dict:
+            valence = valence+self.b_decr
         return valence
 
     def _never_check(self, valence, words_and_emoticons, start_i, i):
         if start_i == 0:
-            if negated([words_and_emoticons[i-1]]):
+            if negated(self.negate_list, [words_and_emoticons[i-1]]):
                     valence = valence*N_SCALAR
         if start_i == 1:
-            if words_and_emoticons[i-2] == "never" and\
-               (words_and_emoticons[i-1] == "so" or
-                words_and_emoticons[i-1] == "this"):
+            if words_and_emoticons[i-2] == self.others["NEVER"] and\
+               (words_and_emoticons[i-1] == self.others["SO"] or
+                words_and_emoticons[i-1] == self.others["THIS"]):
                 valence = valence*1.5
-            elif negated([words_and_emoticons[i-(start_i+1)]]):
+            elif negated(self.negate_list, [words_and_emoticons[i-(start_i+1)]]):
                 valence = valence*N_SCALAR
         if start_i == 2:
-            if words_and_emoticons[i-3] == "never" and \
-               (words_and_emoticons[i-2] == "so" or words_and_emoticons[i-2] == "this") or \
-               (words_and_emoticons[i-1] == "so" or words_and_emoticons[i-1] == "this"):
+            if words_and_emoticons[i-3] == self.others["NEVER"] and \
+               (words_and_emoticons[i-2] == self.others["SO"] or words_and_emoticons[i-2] == self.others["THIS"]) or \
+               (words_and_emoticons[i-1] == self.others["SO"] or words_and_emoticons[i-1] == self.others["THIS"]):
                 valence = valence*1.25
-            elif negated([words_and_emoticons[i-(start_i+1)]]):
+            elif negated(self.negate_list, [words_and_emoticons[i-(start_i+1)]]):
                 valence = valence*N_SCALAR
         return valence
 
@@ -460,9 +444,9 @@ if __name__ == '__main__':
                 "Today SUX!",    #  negative slang with capitalization emphasis
                 "Today only kinda sux! But I'll get by, lol" # mixed sentiment example with slang and constrastive conjunction "but"
                  ]
-    
-    analyzer = SentimentIntensityAnalyzer()
-    
+
+    analyzer = SentimentIntensityAnalyzer(lang='en')
+
     print("----------------------------------------------------")
     print(" - Analyze typical example cases, including handling of:")
     print("  -- negations")
@@ -480,17 +464,17 @@ if __name__ == '__main__':
         print("{:-<65} {}".format(sentence, str(vs)))
     print("----------------------------------------------------")
     print(" - About the scoring: ")
-    print("""  -- The 'compound' score is computed by summing the valence scores of each word in the lexicon, adjusted 
-     according to the rules, and then normalized to be between -1 (most extreme negative) and +1 (most extreme positive). 
-     This is the most useful metric if you want a single unidimensional measure of sentiment for a given sentence.  
+    print("""  -- The 'compound' score is computed by summing the valence scores of each word in the lexicon, adjusted
+     according to the rules, and then normalized to be between -1 (most extreme negative) and +1 (most extreme positive).
+     This is the most useful metric if you want a single unidimensional measure of sentiment for a given sentence.
      Calling it a 'normalized, weighted composite score' is accurate.""")
-    print("""  -- The 'pos', 'neu', and 'neg' scores are ratios for proportions of text that fall in each category (so these   
-     should all add up to be 1... or close to it with float operation).  These are the most useful metrics if 
+    print("""  -- The 'pos', 'neu', and 'neg' scores are ratios for proportions of text that fall in each category (so these
+     should all add up to be 1... or close to it with float operation).  These are the most useful metrics if
      you want multidimensional measures of sentiment for a given sentence.""")
     print("----------------------------------------------------")
-    
+
     input("\nPress Enter to continue the demo...\n") # for DEMO purposes...
-    
+
     tricky_sentences = ["Sentiment analysis has never been good.",
                         "Sentiment analysis has never been this good!",
                         "Most automated sentiment analysis tools are shit.",
@@ -509,9 +493,9 @@ if __name__ == '__main__':
         vs = analyzer.polarity_scores(sentence)
         print("{:-<69} {}".format(sentence, str(vs)))
     print("----------------------------------------------------")
-    
+
     input("\nPress Enter to continue the demo...\n") # for DEMO purposes...
-    
+
     print("----------------------------------------------------")
     print(" - VADER works best when analysis is done at the sentence level (but it can work on single words or entire novels).")
     paragraph = "It was one of the worst movies I've seen, despite good reviews. Unbelievably bad acting!! Poor direction. VERY poor production. The movie was bad. Very bad movie. VERY BAD movie!"
@@ -527,9 +511,9 @@ if __name__ == '__main__':
         paragraphSentiments += vs["compound"]
     print("AVERAGE SENTIMENT FOR PARAGRAPH: \t" + str(round(paragraphSentiments/len(sentence_list), 4)))
     print("----------------------------------------------------")
-    
+
     input("\nPress Enter to continue the demo...\n") # for DEMO purposes...
-        
+
     print("----------------------------------------------------")
     print(" - Analyze sentiment of IMAGES/VIDEO data based on annotation 'tags' or image labels. \n")
     conceptList = ["balloons", "cake", "candles", "happy birthday", "friends", "laughing", "smiling", "party"]
@@ -548,9 +532,9 @@ if __name__ == '__main__':
         conceptSentiments += vs["compound"]
     print("AVERAGE SENTIMENT OF TAGS/LABELS: \t" + str(round(conceptSentiments/len(conceptList), 4)))
     print("----------------------------------------------------")
-    
+
     ("\nPress Enter to continue the demo...") # for DEMO purposes...
-    
+
     do_translate = input("\nWould you like to run VADER demo examples with NON-ENGLISH text? (Note: requires Internet access) \n Type 'y' or 'n', then press Enter: ")
     if do_translate.lower().lstrip() == 'y':
         print("/n----------------------------------------------------")
