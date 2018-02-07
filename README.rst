@@ -11,6 +11,7 @@ VADER (Valence Aware Dictionary and sEntiment Reasoner) is a lexicon and rule-ba
 * `Resources and Dataset Descriptions`_
 * `Python Code Example`_
 * `About the Scoring`_
+* `Ports to Other Programming Languages`_
 
 Features and Updates
 ------------------------------------
@@ -235,4 +236,19 @@ About the Scoring
 
 * The ``pos``, ``neu``, and ``neg`` scores are ratios for proportions of text that fall in each category (so these should all add up to be 1... or close to it with float operation).  These are the most useful metrics if you want multidimensional measures of sentiment for a given sentence.
 
+====================================
+Ports to Other Programming Languages
+====================================
+Feel free to let me know about ports of VADER Sentiment to other programming languages. So far, I know about these helpful ports:
 
+#. Java
+    `VaderSentimentJava <https://github.com/apanimesh061/VaderSentimentJava>`_ by apanimesh061
+
+#. PHP
+	`php-vadersentiment <https://github.com/abusby/php-vadersentiment>`_ by abusby
+
+#. Scala
+	`Sentiment <https://github.com/ziyasal/Sentiment>`_ by ziyasal
+
+#. JavaScript
+	coming soon
