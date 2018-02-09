@@ -244,11 +244,11 @@ Feel free to let me know about ports of VADER Sentiment to other programming lan
 #. Java
     `VaderSentimentJava <https://github.com/apanimesh061/VaderSentimentJava>`_ by apanimesh061
 
-#. PHP
+#. JavaScript
+	`vaderSentiment-js <https://github.com/vaderSentiment/vaderSentiment-js>`_ by nimaeskandary
+
+	#. PHP
 	`php-vadersentiment <https://github.com/abusby/php-vadersentiment>`_ by abusby
 
 #. Scala
 	`Sentiment <https://github.com/ziyasal/Sentiment>`_ by ziyasal
-
-#. JavaScript
-	coming soon
