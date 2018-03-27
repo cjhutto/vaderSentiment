@@ -230,9 +230,9 @@ About the Scoring
   It is also useful for researchers who would like to set standardized thresholds for classifying sentences as either positive, neutral, or negative.  
   Typical threshold values (used in the literature cited on this page) are:
 
- #. **positive sentiment**: ``compound`` score >=  0.5
- #. **neutral  sentiment**: (``compound`` score > -0.5) and (``compound`` score < 0.5)
- #. **negative sentiment**: ``compound`` score <= -0.5
+ #. **positive sentiment**: ``compound`` score >=  0.05
+ #. **neutral  sentiment**: (``compound`` score > -0.05) and (``compound`` score < 0.05)
+ #. **negative sentiment**: ``compound`` score <= -0.05
 
 * The ``pos``, ``neu``, and ``neg`` scores are ratios for proportions of text that fall in each category (so these should all add up to be 1... or close to it with float operation).  These are the most useful metrics if you want multidimensional measures of sentiment for a given sentence.
 
