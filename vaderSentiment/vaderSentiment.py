@@ -41,7 +41,7 @@ NEGATE = \
  "neednt", "needn't", "never", "none", "nope", "nor", "not", "nothing", "nowhere",
  "oughtnt", "shant", "shouldnt", "uhuh", "wasnt", "werent",
  "oughtn't", "shan't", "shouldn't", "uh-uh", "wasn't", "weren't",
- "without", "wont", "wouldnt", "won't", "wouldn't", "rarely", "seldom", "despite"]
+ "without", "wont", "wouldnt", "won't", "wouldn't", "rarely", "seldom", "despite"] #add things here
 
 # booster/dampener 'intensifiers' or 'degree adverbs'
 # http://en.wiktionary.org/wiki/Category:English_degree_adverbs
@@ -63,11 +63,12 @@ BOOSTER_DICT = \
  "kind of": B_DECR, "kinda": B_DECR, "kindof": B_DECR, "kind-of": B_DECR,
  "less": B_DECR, "little": B_DECR, "marginally": B_DECR, "occasionally": B_DECR, "partly": B_DECR,
  "scarcely": B_DECR, "slightly": B_DECR, "somewhat": B_DECR,
- "sort of": B_DECR, "sorta": B_DECR, "sortof": B_DECR, "sort-of": B_DECR}
+ "sort of": B_DECR, "sorta": B_DECR, "sortof": B_DECR, "sort-of": B_DECR}  #add "price hike", "rate hike", "price rise"
 
 # check for special case idioms using a sentiment-laden keyword known to VADER
 SPECIAL_CASE_IDIOMS = {"the shit": 3, "the bomb": 3, "bad ass": 1.5, "yeah right": -2,
-                       "cut the mustard": 2, "kiss of death": -1.5, "hand to mouth": -2}
+                       "cut the mustard": 2, "kiss of death": -1.5, "hand to mouth": -2, "all time high" : 3, "price hike" : -1, "rate hike" : -2,
+			"high debt" : -2, "high fiscal deficit" : -3}
 
 
 ##Static methods##
@@ -166,7 +167,7 @@ class SentiText(object):
         # removes punctuation (but loses emoticons & contractions)
         words_only = no_punc_text.split()
         # remove singletons
-        words_only = set( w for w in words_only if len(w) > 1 )
+        words_only = set( w for w in words_only if len(w) > 1 )  #remove words like 'a'
         # the product gives ('cat', ',') and (',', 'cat')
         punc_before = {''.join(p): p[1] for p in product(PUNC_LIST, words_only)}
         punc_after = {''.join(p): p[0] for p in product(words_only, PUNC_LIST)}
@@ -174,7 +175,7 @@ class SentiText(object):
         words_punc_dict.update(punc_after)
         return words_punc_dict
 
-    def _words_and_emoticons(self):
+    def _words_and_emoticons(self):  #acts as a filter function.
         """
         Removes leading and trailing puncutation
         Leaves contractions and most emoticons
@@ -189,7 +190,7 @@ class SentiText(object):
         return wes
 
 class SentimentIntensityAnalyzer(object):
-    """
+    """			
     Give a sentiment intensity score to sentences.
     """
     def __init__(self, lexicon_file="vader_lexicon.txt"):
@@ -205,8 +206,9 @@ class SentimentIntensityAnalyzer(object):
         """
         lex_dict = {}
         for line in self.lexicon_full_filepath.split('\n'):
-            (word, measure) = line.strip().split('\t')[0:2]
-            lex_dict[word] = float(measure)
+		if line != '':
+            		(word, measure) = line.strip().split('\t')[0:2]
+            		lex_dict[word] = float(measure)
         return lex_dict
 
     def polarity_scores(self, text):
@@ -237,7 +239,7 @@ class SentimentIntensityAnalyzer(object):
 
         return valence_dict
 
-    def sentiment_valence(self, valence, sentitext, item, i, sentiments):
+    def sentiment_valence(self, valence, sentitext, item, i, sentiments): #worth changing
         is_cap_diff = sentitext.is_cap_diff
         words_and_emoticons = sentitext.words_and_emoticons
         item_lowercase = item.lower()
