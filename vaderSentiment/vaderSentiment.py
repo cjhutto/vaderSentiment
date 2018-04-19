@@ -614,7 +614,7 @@ if __name__ == '__main__':
     do_translate = input(
         "\nWould you like to run VADER demo examples with NON-ENGLISH text? (Note: requires Internet access) \n Type 'y' or 'n', then press Enter: ")
     if do_translate.lower().lstrip().__contains__("y"):
-        print("/n----------------------------------------------------")
+        print("\n----------------------------------------------------")
         print(" - Analyze sentiment of NON ENGLISH text...for example:")
         print("  -- French, German, Spanish, Italian, Russian, Japanese, Arabic, Chinese")
         print("  -- many other languages supported. \n")
