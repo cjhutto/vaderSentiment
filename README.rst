@@ -32,6 +32,7 @@ Many thanks to George Berry, Ewan Klein, Pierpaolo Pantone for key contributions
 		- understanding many **sentiment-laden slang** words (e.g., 'sux')
 		- understanding many sentiment-laden **slang words as modifiers** such as 'uber' or 'friggin' or 'kinda'
 		- understanding many sentiment-laden **emoticons** such as :) and :D
+		- translating **utf-8 encoded emojis** such as 💘 and 💋 and 😁
 		- understanding sentiment-laden **initialisms and acronyms** (for example: 'lol')
 
 	* more examples of **tricky sentences** that confuse other sentiment analysis tools
@@ -186,8 +187,9 @@ If you have access to the Internet, the demo will also show how VADER can work w
                 "The book was kind of good.",                 # qualified positive sentence is handled correctly (intensity adjusted)
                 "The plot was good, but the characters are uncompelling and the dialog is not great.", # mixed negation sentence
                 "At least it isn't a horrible book.",         # negated negative sentence with contraction
-                "Make sure you :) or :D today!",              # emoticons handled
                 "Today SUX!",                                 # negative slang with capitalization emphasis
+                "Make sure you :) or :D today!",              # emoticons handled
+                "Catch utf-8 emoji such as 💘 and 💋 and 😁",  # emojis handled
                 "Today only kinda sux! But I'll get by, lol"  # mixed sentiment example with slang and constrastive conjunction "but"
                  ]
     
@@ -216,8 +218,9 @@ Output for the above example code
 	The book was kind of good.--------------------------------------- {'neg': 0.0, 'neu': 0.657, 'pos': 0.343, 'compound': 0.3832}
 	The plot was good, but the characters are uncompelling and the dialog is not great. {'neg': 0.327, 'neu': 0.579, 'pos': 0.094, 'compound': -0.7042}
 	At least it isn't a horrible book.------------------------------- {'neg': 0.0, 'neu': 0.637, 'pos': 0.363, 'compound': 0.431}
-	Make sure you :) or :D today!------------------------------------ {'neg': 0.0, 'neu': 0.294, 'pos': 0.706, 'compound': 0.8633}
 	Today SUX!------------------------------------------------------- {'neg': 0.779, 'neu': 0.221, 'pos': 0.0, 'compound': -0.5461}
+	Make sure you :) or :D today!------------------------------------ {'neg': 0.0, 'neu': 0.294, 'pos': 0.706, 'compound': 0.8633}
+	Catch utf-8 emoji such as 💘 and 💋 and 😁-------------------------- {'neg': 0.0, 'neu': 0.721, 'pos': 0.279, 'compound': 0.7003}
 	Today only kinda sux! But I'll get by, lol----------------------- {'neg': 0.179, 'neu': 0.569, 'pos': 0.251, 'compound': 0.2228}
 
 
