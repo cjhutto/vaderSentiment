@@ -208,13 +208,13 @@ class SentimentIntensityAnalyzer(object):
     """
 
     def __init__(self, lexicon_file="vader_lexicon.txt", emoji_lexicon="emoji_utf8_lexicon.txt"):
-        _this_module_file_path_ = __file__
-        lexicon_full_filepath = os.path.join(os.path.dirname(_this_module_file_path_), lexicon_file)
+        dirname = os.path.dirname(__file__)
+        lexicon_full_filepath = os.path.join(dirname, lexicon_file)
         with open(lexicon_full_filepath, encoding='utf-8') as f:
             self.lexicon_full_filepath = f.read()
         self.lexicon = self.make_lex_dict()
 
-        emoji_full_filepath = os.path.join(os.path.dirname(_this_module_file_path_), emoji_lexicon)
+        emoji_full_filepath = os.path.join(dirname, emoji_lexicon)
         with open(emoji_full_filepath, encoding='utf-8') as f:
             self.emoji_full_filepath = f.read()
         self.emojis = self.make_emoji_dict()
