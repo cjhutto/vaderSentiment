@@ -245,16 +245,20 @@ class SentimentIntensityAnalyzer(object):
         valence.
         """
         # convert emojis to their textual descriptions
-        text_token_list = text.split()
-        text_no_emoji_lst = []
-        for token in text_token_list:
-            if token in self.emojis:
+        text_no_emoji = ""
+        prev_space = True
+        for chr in text:
+            if chr in self.emojis:
                 # get the textual description
-                description = self.emojis[token]
-                text_no_emoji_lst.append(description)
+                description = self.emojis[chr]
+                if not prev_space:
+                    text_no_emoji += ' '
+                text_no_emoji += description
+                prev_space = False
             else:
-                text_no_emoji_lst.append(token)
-        text = " ".join(x for x in text_no_emoji_lst)
+                text_no_emoji += chr
+                prev_space = chr == ' '
+        text = text_no_emoji.strip()
 
         sentitext = SentiText(text)
 
@@ -554,12 +558,12 @@ if __name__ == '__main__':
         print("{:-<65} {}".format(sentence, str(vs)))
     print("----------------------------------------------------")
     print(" - About the scoring: ")
-    print("""  -- The 'compound' score is computed by summing the valence scores of each word in the lexicon, adjusted 
-     according to the rules, and then normalized to be between -1 (most extreme negative) and +1 (most extreme positive). 
-     This is the most useful metric if you want a single unidimensional measure of sentiment for a given sentence.  
+    print("""  -- The 'compound' score is computed by summing the valence scores of each word in the lexicon, adjusted
+     according to the rules, and then normalized to be between -1 (most extreme negative) and +1 (most extreme positive).
+     This is the most useful metric if you want a single unidimensional measure of sentiment for a given sentence.
      Calling it a 'normalized, weighted composite score' is accurate.""")
-    print("""  -- The 'pos', 'neu', and 'neg' scores are ratios for proportions of text that fall in each category (so these   
-     should all add up to be 1... or close to it with float operation).  These are the most useful metrics if 
+    print("""  -- The 'pos', 'neu', and 'neg' scores are ratios for proportions of text that fall in each category (so these
+     should all add up to be 1... or close to it with float operation).  These are the most useful metrics if
      you want multidimensional measures of sentiment for a given sentence.""")
     print("----------------------------------------------------")
 
