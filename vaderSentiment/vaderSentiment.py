@@ -29,11 +29,6 @@ B_DECR = -0.293
 C_INCR = 0.733
 N_SCALAR = -0.74
 
-# for removing punctuation
-REGEX_REMOVE_PUNCTUATION = re.compile('[%s]' % re.escape(string.punctuation))
-
-PUNC_LIST = [".", "!", "?", ",", ";", ":", "-", "'", "\"",
-             "!!", "!!!", "??", "???", "?!?", "!?!", "?!?!", "!?!?"]
 NEGATE = \
     ["aint", "arent", "cannot", "cant", "couldnt", "darent", "didnt", "doesnt",
      "ain't", "aren't", "can't", "couldn't", "daren't", "didn't", "doesn't",
@@ -166,25 +161,18 @@ class SentiText(object):
         # adjacent punctuation (keeps emoticons & contractions)
         self.is_cap_diff = allcap_differential(self.words_and_emoticons)
 
-    def _words_plus_punc(self):
+    @staticmethod
+    def _strip_punc_if_word(token):
         """
-        Returns mapping of form:
-        {
-            'cat,': 'cat',
-            ',cat': 'cat',
-        }
+        Removes all trailing and leading punctuation
+        If the resulting string has two or fewer characters,
+        then it was likely an emoticon, so return original string
+        (ie ":)" stripped would be "", so just return ":)"
         """
-        no_punc_text = REGEX_REMOVE_PUNCTUATION.sub('', self.text)
-        # removes punctuation (but loses emoticons & contractions)
-        words_only = no_punc_text.split()
-        # remove singletons
-        words_only = set(w for w in words_only if len(w) > 1)
-        # the product gives ('cat', ',') and (',', 'cat')
-        punc_before = {''.join(p): p[1] for p in product(PUNC_LIST, words_only)}
-        punc_after = {''.join(p): p[0] for p in product(words_only, PUNC_LIST)}
-        words_punc_dict = punc_before
-        words_punc_dict.update(punc_after)
-        return words_punc_dict
+        stripped = token.strip(string.punctuation)
+        if len(stripped) <= 2:
+            return token
+        return stripped
 
     def _words_and_emoticons(self):
         """
@@ -193,13 +181,8 @@ class SentiText(object):
             Does not preserve punc-plus-letter emoticons (e.g. :D)
         """
         wes = self.text.split()
-        words_punc_dict = self._words_plus_punc()
-        wes = [we for we in wes if len(we) > 1]
-        for i, we in enumerate(wes):
-            if we in words_punc_dict:
-                wes[i] = words_punc_dict[we]
-        return wes
-
+        stripped = list(map(self._strip_punc_if_word, wes))
+        return stripped
 
 class SentimentIntensityAnalyzer(object):
     """
