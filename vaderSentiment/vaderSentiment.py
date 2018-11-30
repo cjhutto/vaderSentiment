@@ -18,6 +18,7 @@ import requests
 import json
 from itertools import product
 from inspect import getsourcefile
+from io import open
 
 # ##Constants##
 
