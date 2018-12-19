@@ -259,4 +259,4 @@ Feel free to let me know about ports of VADER Sentiment to other programming lan
 	`Sentiment <https://github.com/ziyasal/Sentiment>`_ by ziyasal
 	
 #. C#
-	vadersharp <https://github.com/codingupastorm/vadersharp>`_ by codingupastorm Jordan Andrews
+	`vadersharp <https://github.com/codingupastorm/vadersharp>`_ by codingupastorm Jordan Andrews
