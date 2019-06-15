@@ -18,7 +18,6 @@ import requests
 import json
 from itertools import product
 from inspect import getsourcefile
-from io import open
 
 # ##Constants##
 
@@ -72,7 +71,10 @@ SENTIMENT_LADEN_IDIOMS = {"cut the mustard": 2, "hand to mouth": -2,
                           "back handed": -2, "blow smoke": -2, "blowing smoke": -2,
                           "upper hand": 1, "break a leg": 2,
                           "cooking with gas": 2, "in the black": 2, "in the red": -2,
-                          "on the ball": 2, "under the weather": -2}
+                          "on the ball": 2, "under the weather": -2, "Bull Market": 2.3,
+                          "All time high": 2.3, "Trading analysis": 1, "Short squeeze": 0.6,
+                          "Closing a long": 1.6, "Closing a short": -0.1, "Opening a long": 1.3,
+                          "Opening a short": 0.9, "flip a coin": 0.6}
 
 # check for special case idioms containing lexicon words
 SPECIAL_CASE_IDIOMS = {"the shit": 3, "the bomb": 3, "bad ass": 1.5, "yeah right": -2,
