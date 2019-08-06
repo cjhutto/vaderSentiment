@@ -208,6 +208,8 @@ class SentimentIntensityAnalyzer(object):
         """
         lex_dict = {}
         for line in self.lexicon_full_filepath.split('\n'):
+            if not line:
+                continue
             (word, measure) = line.strip().split('\t')[0:2]
             lex_dict[word] = float(measure)
         return lex_dict
