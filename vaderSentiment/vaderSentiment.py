@@ -30,11 +30,6 @@ B_DECR = -0.293
 C_INCR = 0.733
 N_SCALAR = -0.74
 
-# for removing punctuation
-REGEX_REMOVE_PUNCTUATION = re.compile('[%s]' % re.escape(string.punctuation))
-
-PUNC_LIST = [".", "!", "?", ",", ";", ":", "-", "'", "\"",
-             "!!", "!!!", "??", "???", "?!?", "!?!", "?!?!", "!?!?"]
 NEGATE = \
     ["aint", "arent", "cannot", "cant", "couldnt", "darent", "didnt", "doesnt",
      "ain't", "aren't", "can't", "couldn't", "daren't", "didn't", "doesn't",
@@ -167,25 +162,18 @@ class SentiText(object):
         # adjacent punctuation (keeps emoticons & contractions)
         self.is_cap_diff = allcap_differential(self.words_and_emoticons)
 
-    def _words_plus_punc(self):
+    @staticmethod
+    def _strip_punc_if_word(token):
         """
-        Returns mapping of form:
-        {
-            'cat,': 'cat',
-            ',cat': 'cat',
-        }
+        Removes all trailing and leading punctuation
+        If the resulting string has two or fewer characters,
+        then it was likely an emoticon, so return original string
+        (ie ":)" stripped would be "", so just return ":)"
         """
-        no_punc_text = REGEX_REMOVE_PUNCTUATION.sub('', self.text)
-        # removes punctuation (but loses emoticons & contractions)
-        words_only = no_punc_text.split()
-        # remove singletons
-        words_only = set(w for w in words_only if len(w) > 1)
-        # the product gives ('cat', ',') and (',', 'cat')
-        punc_before = {''.join(p): p[1] for p in product(PUNC_LIST, words_only)}
-        punc_after = {''.join(p): p[0] for p in product(words_only, PUNC_LIST)}
-        words_punc_dict = punc_before
-        words_punc_dict.update(punc_after)
-        return words_punc_dict
+        stripped = token.strip(string.punctuation)
+        if len(stripped) <= 2:
+            return token
+        return stripped
 
     def _words_and_emoticons(self):
         """
@@ -194,13 +182,8 @@ class SentiText(object):
             Does not preserve punc-plus-letter emoticons (e.g. :D)
         """
         wes = self.text.split()
-        words_punc_dict = self._words_plus_punc()
-        wes = [we for we in wes if len(we) > 1]
-        for i, we in enumerate(wes):
-            if we in words_punc_dict:
-                wes[i] = words_punc_dict[we]
-        return wes
-
+        stripped = list(map(self._strip_punc_if_word, wes))
+        return stripped
 
 class SentimentIntensityAnalyzer(object):
     """
@@ -246,16 +229,20 @@ class SentimentIntensityAnalyzer(object):
         valence.
         """
         # convert emojis to their textual descriptions
-        text_token_list = text.split()
-        text_no_emoji_lst = []
-        for token in text_token_list:
-            if token in self.emojis:
+        text_no_emoji = ""
+        prev_space = True
+        for chr in text:
+            if chr in self.emojis:
                 # get the textual description
-                description = self.emojis[token]
-                text_no_emoji_lst.append(description)
+                description = self.emojis[chr]
+                if not prev_space:
+                    text_no_emoji += ' '
+                text_no_emoji += description
+                prev_space = False
             else:
-                text_no_emoji_lst.append(token)
-        text = " ".join(x for x in text_no_emoji_lst)
+                text_no_emoji += chr
+                prev_space = chr == ' '
+        text = text_no_emoji.strip()
 
         sentitext = SentiText(text)
 
@@ -555,12 +542,12 @@ if __name__ == '__main__':
         print("{:-<65} {}".format(sentence, str(vs)))
     print("----------------------------------------------------")
     print(" - About the scoring: ")
-    print("""  -- The 'compound' score is computed by summing the valence scores of each word in the lexicon, adjusted 
-     according to the rules, and then normalized to be between -1 (most extreme negative) and +1 (most extreme positive). 
-     This is the most useful metric if you want a single unidimensional measure of sentiment for a given sentence.  
+    print("""  -- The 'compound' score is computed by summing the valence scores of each word in the lexicon, adjusted
+     according to the rules, and then normalized to be between -1 (most extreme negative) and +1 (most extreme positive).
+     This is the most useful metric if you want a single unidimensional measure of sentiment for a given sentence.
      Calling it a 'normalized, weighted composite score' is accurate.""")
-    print("""  -- The 'pos', 'neu', and 'neg' scores are ratios for proportions of text that fall in each category (so these   
-     should all add up to be 1... or close to it with float operation).  These are the most useful metrics if 
+    print("""  -- The 'pos', 'neu', and 'neg' scores are ratios for proportions of text that fall in each category (so these
+     should all add up to be 1... or close to it with float operation).  These are the most useful metrics if
      you want multidimensional measures of sentiment for a given sentence.""")
     print("----------------------------------------------------")
 
