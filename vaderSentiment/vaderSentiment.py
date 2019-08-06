@@ -207,7 +207,7 @@ class SentimentIntensityAnalyzer(object):
         Convert lexicon file to a dictionary
         """
         lex_dict = {}
-        for line in self.lexicon_full_filepath.split('\n'):
+        for line in self.lexicon_full_filepath.rstrip('\n').split('\n'):
             if not line:
                 continue
             (word, measure) = line.strip().split('\t')[0:2]
