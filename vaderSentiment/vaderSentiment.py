@@ -639,10 +639,10 @@ if __name__ == '__main__':
     if do_translate.lower().lstrip().__contains__("y"):
         print("\n----------------------------------------------------")
         print(" - Analyze sentiment of NON ENGLISH text...for example:")
-        print("  -- French, German, Spanish, Italian, Russian, Japanese, Arabic, Chinese")
+        print("  -- French, German, Spanish, Italian, Russian, Japanese, Arabic, Chinese(Simplified) , Chinese(Traditional)")
         print("  -- many other languages supported. \n")
-        languages = ["English", "French", "German", "Spanish", "Italian", "Russian", "Japanese", "Arabic", "Chinese"]
-        language_codes = ["en", "fr", "de", "es", "it", "ru", "ja", "ar", "zh"]
+        languages = ["English", "French", "German", "Spanish", "Italian", "Russian", "Japanese", "Arabic", "Chinese(Simplified)", "Chinese(Traditional)"]
+        language_codes = ["en", "fr", "de", "es", "it", "ru", "ja", "ar", "zh-CN", "zh-TW"]
         nonEnglish_sentences = ["I'm surprised to see just how amazingly helpful VADER is!",
                                 "Je suis surpris de voir juste comment incroyablement utile VADER est!",
                                 "Ich bin überrascht zu sehen, nur wie erstaunlich nützlich VADER!",
@@ -651,7 +651,8 @@ if __name__ == '__main__':
                                 "Я удивлен увидеть, как раз как удивительно полезно ВЕЙДЕРА!",
                                 "私はちょうどどのように驚くほど役に立つベイダーを見て驚いています!",
                                 "أنا مندهش لرؤية فقط كيف مثير للدهشة فيدر فائدة!",
-                                "惊讶地看到有用维德是的只是如何令人惊讶了 ！"
+                                "我很惊讶地看到VADER是如此有用!",
+                                "我很驚訝地看到VADER是如此有用!"
                                 ]
         for sentence in nonEnglish_sentences:
             to_lang = "en"
