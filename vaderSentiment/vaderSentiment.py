@@ -71,8 +71,8 @@ SENTIMENT_LADEN_IDIOMS = {"cut the mustard": 2, "hand to mouth": -2,
                           "on the ball": 2, "under the weather": -2}
 
 # check for special case idioms containing lexicon words
-SPECIAL_CASE_IDIOMS = {"the shit": 3, "the bomb": 3, "bad ass": 1.5, "yeah right": -2,
-                       "kiss of death": -1.5}
+SPECIAL_CASE_IDIOMS = {"the shit": 3, "the bomb": 3, "bad ass": 1.5, "badass": 1.5,
+                       "yeah right": -2, "kiss of death": -1.5, "to die for": 3}
 
 
 # #Static methods# #
