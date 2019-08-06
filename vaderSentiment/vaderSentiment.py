@@ -251,9 +251,8 @@ class SentimentIntensityAnalyzer(object):
 
         sentiments = []
         words_and_emoticons = sentitext.words_and_emoticons
-        for item in words_and_emoticons:
+        for i, item in enumerate(words_and_emoticons):
             valence = 0
-            i = words_and_emoticons.index(item)
             # check for vader_lexicon words that may be used as modifiers or negations
             if item.lower() in BOOSTER_DICT:
                 sentiments.append(valence)
