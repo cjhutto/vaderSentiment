@@ -638,7 +638,7 @@ if __name__ == '__main__':
         languages = ["English", "French", "German", "Spanish", "Italian", "Russian", "Japanese", "Arabic", "Chinese(Simplified)", "Chinese(Traditional)"]
         language_codes = ["en", "fr", "de", "es", "it", "ru", "ja", "ar", "zh-CN", "zh-TW"]
         nonEnglish_sentences = ["I'm surprised to see just how amazingly helpful VADER is!",
-                                "Je suis surpris de voir juste comment incroyablement utile VADER est!",
+                                "Je suis surpris de voir comment VADER est incroyablement utile !",
                                 "Ich bin überrascht zu sehen, nur wie erstaunlich nützlich VADER!",
                                 "Me sorprende ver sólo cómo increíblemente útil VADER!",
                                 "Sono sorpreso di vedere solo come incredibilmente utile VADER è!",
