@@ -287,7 +287,9 @@ class SentimentIntensityAnalyzer(object):
             if item_lowercase == "no" and words_and_emoticons[i + 1].lower() in self.lexicon:
                 # don't use valence of "no" as a lexicon item. Instead set it's valence to 0.0 and negate the next item
                 valence = 0.0
-            if i > 0 and words_and_emoticons[i - 1].lower() == "no" and item_lowercase in self.lexicon:
+            if (i > 0 and words_and_emoticons[i - 1].lower() == "no") \
+               or (i > 1 and words_and_emoticons[i - 2].lower() == "no") \
+               or (i > 2 and words_and_emoticons[i - 3].lower() == "no" and words_and_emoticons[i - 1].lower() in ["or", "nor"] ):
                 valence = self.lexicon[item_lowercase] * N_SCALAR
             
             # check if sentiment laden word is in ALL CAPS (while others aren't)
