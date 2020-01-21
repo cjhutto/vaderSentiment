@@ -263,3 +263,6 @@ Feel free to let me know about ports of VADER Sentiment to other programming lan
 	
 #. Rust
 	`vader-sentiment-rust <https://github.com/ckw017/vader-sentiment-rust>`_ by ckw017
+
+#. Go
+	`GoVader <https://github.com/jonreiter/govader>`_ by  jonreiter Jon Reiter
