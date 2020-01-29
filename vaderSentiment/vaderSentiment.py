@@ -284,7 +284,7 @@ class SentimentIntensityAnalyzer(object):
             valence = self.lexicon[item_lowercase]
                 
             # check for "no" as negation for an adjacent lexicon item vs "no" as its own stand-alone lexicon item
-            if item_lowercase == "no" and words_and_emoticons[i + 1].lower() in self.lexicon:
+            if item_lowercase == "no" and i != len(words_and_emoticons)-1 and words_and_emoticons[i + 1].lower() in self.lexicon:
                 # don't use valence of "no" as a lexicon item. Instead set it's valence to 0.0 and negate the next item
                 valence = 0.0
             if (i > 0 and words_and_emoticons[i - 1].lower() == "no") \
