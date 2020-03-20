@@ -9,7 +9,9 @@ VADER (Valence Aware Dictionary and sEntiment Reasoner) is a lexicon and rule-ba
 * `Citation Information`_
 * Installation_
 * `Resources and Dataset Descriptions`_
-* `Python Code Example`_
+* `Python Demo and Code Examples`_
+	* `Demo, including example of non-English text translations`_
+	* `Code Examples`_
 * `About the Scoring`_
 * `Ports to Other Programming Languages`_
 
@@ -160,15 +162,18 @@ The package here includes **PRIMARY RESOURCES** (items 1-3) as well as additiona
     [Comp.Social](http://comp.social.gatech.edu/papers/)
 
 ====================================
-Python Code Example
+Python Demo and Code Examples
 ====================================
-
-For a **more complete demo**, point your terminal to vader's install directory (e.g., if you installed using pip, it might be ``\Python3x\lib\site-packages\vaderSentiment``), and then run ``python vaderSentiment.py``.
+Demo, including example of non-English text translations
+------------------------------------
+For a **more complete demo**, point your terminal to vader's install directory (e.g., if you installed using pip, it might be ``\Python3x\lib\site-packages\vaderSentiment``), and then run ``python vaderSentiment.py``. (Be sure you are set to handle UTF-8 encoding in your terminal or IDE.)
 
 The demo has more examples of tricky sentences that confuse other sentiment analysis tools. It also demonstrates how VADER can work in conjunction with NLTK to do sentiment analysis on longer texts...i.e., decomposing paragraphs, articles/reports/publications, or novels into sentence-level analysis.  It also demonstrates a concept for assessing the sentiment of images, video, or other tagged multimedia content.
 
-If you have access to the Internet, the demo will also show how VADER can work with analyzing sentiment of non-English text sentences.
+If you have access to the Internet, the demo will also show how VADER can work with analyzing sentiment of non-English text sentences. Please be aware that VADER does not inherently provide it's own translation.  The use of "My Memory Translation Service" from MY MEMORY NET (see:  http://mymemory.translated.net) is part of the demonstration showing (one way) for how to use VADER on non-English text.  (Please note the usage limits for number of requests:  http://mymemory.translated.net/doc/usagelimits.php)
 
+Code Examples
+------------------------------------
 ::
 
 	from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
@@ -200,7 +205,7 @@ If you have access to the Internet, the demo will also show how VADER can work w
         print("{:-<65} {}".format(sentence, str(vs)))
 
 
-For a **more complete demo**, go to the install directory and run ``python vaderSentiment.py``. (Be sure you are set to handle UTF-8 encoding in your terminal or IDE.)
+Again, for a **more complete demo**, go to the install directory and run ``python vaderSentiment.py``. (Be sure you are set to handle UTF-8 encoding in your terminal or IDE.)
 
 ====================================
 Output for the above example code
