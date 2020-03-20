@@ -166,7 +166,7 @@ Python Demo and Code Examples
 ====================================
 Demo, including example of non-English text translations
 ------------------------------------
-For a **more complete demo**, point your terminal to vader's install directory (e.g., if you installed using pip, it might be ``\Python3x\lib\site-packages\vaderSentiment``), and then run ``python vaderSentiment.py``. (Be sure you are set to handle UTF-8 encoding in your terminal or IDE.)
+For a **more complete demo**, point your terminal to vader's install directory (e.g., if you installed using pip, it might be ``\Python3x\lib\site-packages\vaderSentiment``), and then run ``python vaderSentiment.py``. (Be sure you are set to handle UTF-8 encoding in your terminal or IDE... there are also additional library/package requirements such as NLTK and requests to help demonstrate some common real world needs/desired uses).
 
 The demo has more examples of tricky sentences that confuse other sentiment analysis tools. It also demonstrates how VADER can work in conjunction with NLTK to do sentiment analysis on longer texts...i.e., decomposing paragraphs, articles/reports/publications, or novels into sentence-level analysis.  It also demonstrates a concept for assessing the sentiment of images, video, or other tagged multimedia content.
 
