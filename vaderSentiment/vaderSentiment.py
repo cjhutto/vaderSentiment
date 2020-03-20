@@ -75,8 +75,8 @@ SENTIMENT_LADEN_IDIOMS = {"cut the mustard": 2, "hand to mouth": -2,
                           "cooking with gas": 2, "in the black": 2, "in the red": -2,
                           "on the ball": 2, "under the weather": -2}
 
-# check for special case idioms containing lexicon words
-SPECIAL_CASE_IDIOMS = {"the shit": 3, "the bomb": 3, "bad ass": 1.5, "badass": 1.5,
+# check for special case idioms and phrases containing lexicon words
+SPECIAL_CASES = {"the shit": 3, "the bomb": 3, "bad ass": 1.5, "badass": 1.5, "bus stop": 0.0,
                        "yeah right": -2, "kiss of death": -1.5, "to die for": 3}
 
 
@@ -363,19 +363,19 @@ class SentimentIntensityAnalyzer(object):
         sequences = [onezero, twoonezero, twoone, threetwoone, threetwo]
 
         for seq in sequences:
-            if seq in SPECIAL_CASE_IDIOMS:
-                valence = SPECIAL_CASE_IDIOMS[seq]
+            if seq in SPECIAL_CASES:
+                valence = SPECIAL_CASES[seq]
                 break
 
         if len(words_and_emoticons_lower) - 1 > i:
             zeroone = "{0} {1}".format(words_and_emoticons_lower[i], words_and_emoticons_lower[i + 1])
-            if zeroone in SPECIAL_CASE_IDIOMS:
-                valence = SPECIAL_CASE_IDIOMS[zeroone]
+            if zeroone in SPECIAL_CASES:
+                valence = SPECIAL_CASES[zeroone]
         if len(words_and_emoticons_lower) - 1 > i + 1:
             zeroonetwo = "{0} {1} {2}".format(words_and_emoticons_lower[i], words_and_emoticons_lower[i + 1],
                                               words_and_emoticons_lower[i + 2])
-            if zeroonetwo in SPECIAL_CASE_IDIOMS:
-                valence = SPECIAL_CASE_IDIOMS[zeroonetwo]
+            if zeroonetwo in SPECIAL_CASES:
+                valence = SPECIAL_CASES[zeroonetwo]
 
         # check for booster/dampener bi-grams such as 'sort of' or 'kind of'
         n_grams = [threetwoone, threetwo, twoone]
