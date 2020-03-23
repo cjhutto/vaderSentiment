@@ -19,7 +19,7 @@ setup(
   version = '3.3.1',
   description = 'VADER Sentiment Analysis. VADER (Valence Aware Dictionary and sEntiment Reasoner) is a lexicon and rule-based sentiment analysis tool that is specifically attuned to sentiments expressed in social media, and works well on texts from other domains.',
   long_description = read("README.rst"),
-  long_description_content_type = 'text/markdown',
+  long_description_content_type = 'text/x-rst',
   author = 'C.J. Hutto',
   author_email = 'cjhutto@gatech.edu',
   license = 'MIT License: http://opensource.org/licenses/MIT',
