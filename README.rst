@@ -271,3 +271,6 @@ Feel free to let me know about ports of VADER Sentiment to other programming lan
 
 #. Go
 	`GoVader <https://github.com/jonreiter/govader>`_ by  jonreiter Jon Reiter
+
+#. R
+	`R Vader <https://cran.r-project.org/web/packages/vader/index.html>`_ by  Kate Roehrick
