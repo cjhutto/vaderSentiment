@@ -33,27 +33,30 @@ N_SCALAR = -0.74
 NEGATE = \
     ["aint", "arent", "cannot", "cant", "couldnt", "darent", "didnt", "doesnt",
      "ain't", "aren't", "can't", "couldn't", "daren't", "didn't", "doesn't",
+     "ain’t", "aren’t", "can’t", "couldn’t", "daren’t", "didn’t", "doesn’t",
      "dont", "hadnt", "hasnt", "havent", "isnt", "mightnt", "mustnt", "neither",
      "don't", "hadn't", "hasn't", "haven't", "isn't", "mightn't", "mustn't",
-     "neednt", "needn't", "never", "none", "nope", "nor", "not", "nothing", "nowhere",
+     "don’t", "hadn’t", "hasn’t", "haven’t", "isn’t", "mightn’t", "mustn’t",
+     "neednt", "needn't", "needn’t", "never", "none", "nope", "nor", "not", "nothing", "nowhere",
      "oughtnt", "shant", "shouldnt", "uhuh", "wasnt", "werent",
      "oughtn't", "shan't", "shouldn't", "uh-uh", "wasn't", "weren't",
-     "without", "wont", "wouldnt", "won't", "wouldn't", "rarely", "seldom", "despite"]
+     "oughtn’t", "shan't", "shouldn't", "wasn't", "weren’t",
+     "without", "wont", "wouldnt", "won't", "won’t", "wouldn't", "wouldn’t", "rarely", "seldom", "despite"]
 
 # booster/dampener 'intensifiers' or 'degree adverbs'
 # http://en.wiktionary.org/wiki/Category:English_degree_adverbs
 
 BOOSTER_DICT = \
-    {"absolutely": B_INCR, "amazingly": B_INCR, "awfully": B_INCR, 
+    {"absolutely": B_INCR, "amazingly": B_INCR, "awfully": B_INCR,
      "completely": B_INCR, "considerable": B_INCR, "considerably": B_INCR,
      "decidedly": B_INCR, "deeply": B_INCR, "effing": B_INCR, "enormous": B_INCR, "enormously": B_INCR,
-     "entirely": B_INCR, "especially": B_INCR, "exceptional": B_INCR, "exceptionally": B_INCR, 
+     "entirely": B_INCR, "especially": B_INCR, "exceptional": B_INCR, "exceptionally": B_INCR,
      "extreme": B_INCR, "extremely": B_INCR,
      "fabulously": B_INCR, "flipping": B_INCR, "flippin": B_INCR, "frackin": B_INCR, "fracking": B_INCR,
-     "fricking": B_INCR, "frickin": B_INCR, "frigging": B_INCR, "friggin": B_INCR, "fully": B_INCR, 
+     "fricking": B_INCR, "frickin": B_INCR, "frigging": B_INCR, "friggin": B_INCR, "fully": B_INCR,
      "fuckin": B_INCR, "fucking": B_INCR, "fuggin": B_INCR, "fugging": B_INCR,
-     "greatly": B_INCR, "hella": B_INCR, "highly": B_INCR, "hugely": B_INCR, 
-     "incredible": B_INCR, "incredibly": B_INCR, "intensely": B_INCR, 
+     "greatly": B_INCR, "hella": B_INCR, "highly": B_INCR, "hugely": B_INCR,
+     "incredible": B_INCR, "incredibly": B_INCR, "intensely": B_INCR,
      "major": B_INCR, "majorly": B_INCR, "more": B_INCR, "most": B_INCR, "particularly": B_INCR,
      "purely": B_INCR, "quite": B_INCR, "really": B_INCR, "remarkably": B_INCR,
      "so": B_INCR, "substantially": B_INCR,
@@ -76,7 +79,7 @@ SENTIMENT_LADEN_IDIOMS = {"cut the mustard": 2, "hand to mouth": -2,
 
 # check for special case idioms and phrases containing lexicon words
 SPECIAL_CASES = {"the shit": 3, "the bomb": 3, "bad ass": 1.5, "badass": 1.5, "bus stop": 0.0,
-                 "yeah right": -2, "kiss of death": -1.5, "to die for": 3, 
+                 "yeah right": -2, "kiss of death": -1.5, "to die for": 3,
                  "beating heart": 3.1, "broken heart": -2.9 }
 
 
@@ -280,9 +283,9 @@ class SentimentIntensityAnalyzer(object):
         words_and_emoticons = sentitext.words_and_emoticons
         item_lowercase = item.lower()
         if item_lowercase in self.lexicon:
-            # get the sentiment valence 
+            # get the sentiment valence
             valence = self.lexicon[item_lowercase]
-                
+
             # check for "no" as negation for an adjacent lexicon item vs "no" as its own stand-alone lexicon item
             if item_lowercase == "no" and i != len(words_and_emoticons)-1 and words_and_emoticons[i + 1].lower() in self.lexicon:
                 # don't use valence of "no" as a lexicon item. Instead set it's valence to 0.0 and negate the next item
@@ -291,7 +294,7 @@ class SentimentIntensityAnalyzer(object):
                or (i > 1 and words_and_emoticons[i - 2].lower() == "no") \
                or (i > 2 and words_and_emoticons[i - 3].lower() == "no" and words_and_emoticons[i - 1].lower() in ["or", "nor"] ):
                 valence = self.lexicon[item_lowercase] * N_SCALAR
-            
+
             # check if sentiment laden word is in ALL CAPS (while others aren't)
             if item.isupper() and is_cap_diff:
                 if valence > 0:
