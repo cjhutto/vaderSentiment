@@ -243,8 +243,10 @@ About the Scoring
  #. **positive sentiment**: ``compound`` score >=  0.05
  #. **neutral  sentiment**: (``compound`` score > -0.05) and (``compound`` score < 0.05)
  #. **negative sentiment**: ``compound`` score <= -0.05
+ 
+ **NOTE:** The ``compound`` score is the one most commonly used for sentiment analysis by most researchers, including the authors.
 
-* The ``pos``, ``neu``, and ``neg`` scores are ratios for proportions of text that fall in each category (so these should all add up to be 1... or close to it with float operation).  These are the most useful metrics if you want multidimensional measures of sentiment for a given sentence.
+* The ``pos``, ``neu``, and ``neg`` scores are *ratios for proportions of text that fall in each category* (so these should all add up to be 1... or close to it with float operation).  These are the most useful metrics if you want to analyze the context & presentation of how sentiment is conveyed or embedded in rhetoric for a given sentence (for example, many writing styles embed strongly positive or negative sentiment within a great deal of neutral text). **IMPORTANTLY:** these proportions represent the "raw categorization" of each lexical item (e.g., words, emoticons/emojis, or initialisms) into positve, negative, or neutral classes; it **does not** account for the VADER rule-based enhancements such as word-order sensitivity for sentiment-laden multi-word phrases, degree modifiers, word-shape amplifiers, punctuation amplifiers, negation polarity switches, or contrastive conjunction sensitivity.
 
 ====================================
 Ports to Other Programming Languages
