@@ -77,7 +77,7 @@ SENTIMENT_LADEN_IDIOMS = {"cut the mustard": 2, "hand to mouth": -2,
 # check for special case idioms and phrases containing lexicon words
 SPECIAL_CASES = {"the shit": 3, "the bomb": 3, "bad ass": 1.5, "badass": 1.5, "bus stop": 0.0,
                  "yeah right": -2, "kiss of death": -1.5, "to die for": 3,
-                 "beating heart": 3.1, "broken heart": -2.9}
+                 "beating heart": 3.1, "broken heart": -2.9 }
 
 
 # #Static methods# #
@@ -191,7 +191,6 @@ class SentiText(object):
         stripped = list(map(self._strip_punc_if_word, wes))
         return stripped
 
-
 class SentimentIntensityAnalyzer(object):
     """
     Give a sentiment intensity score to sentences.
@@ -285,14 +284,12 @@ class SentimentIntensityAnalyzer(object):
             valence = self.lexicon[item_lowercase]
 
             # check for "no" as negation for an adjacent lexicon item vs "no" as its own stand-alone lexicon item
-            if item_lowercase == "no" and i != len(words_and_emoticons) - 1 and words_and_emoticons[
-                i + 1].lower() in self.lexicon:
+            if item_lowercase == "no" and i != len(words_and_emoticons)-1 and words_and_emoticons[i + 1].lower() in self.lexicon:
                 # don't use valence of "no" as a lexicon item. Instead set it's valence to 0.0 and negate the next item
                 valence = 0.0
             if (i > 0 and words_and_emoticons[i - 1].lower() == "no") \
-                    or (i > 1 and words_and_emoticons[i - 2].lower() == "no") \
-                    or (i > 2 and words_and_emoticons[i - 3].lower() == "no" and words_and_emoticons[i - 1].lower() in [
-                "or", "nor"]):
+               or (i > 1 and words_and_emoticons[i - 2].lower() == "no") \
+               or (i > 2 and words_and_emoticons[i - 3].lower() == "no" and words_and_emoticons[i - 1].lower() in ["or", "nor"] ):
                 valence = self.lexicon[item_lowercase] * N_SCALAR
 
             # check if sentiment laden word is in ALL CAPS (while others aren't)
@@ -645,14 +642,11 @@ if __name__ == '__main__':
         "\nWould you like to run VADER demo examples with NON-ENGLISH text? \n (Note: requires Internet access and uses the 'requests' library) \n Type 'y' or 'n', then press Enter: ")
     if do_translate.lower().lstrip().__contains__("y"):
         import requests
-
         print("\n----------------------------------------------------")
         print(" - Analyze sentiment of NON ENGLISH text...for example:")
-        print(
-            "  -- French, German, Spanish, Italian, Russian, Japanese, Arabic, Chinese(Simplified) , Chinese(Traditional)")
+        print("  -- French, German, Spanish, Italian, Russian, Japanese, Arabic, Chinese(Simplified) , Chinese(Traditional)")
         print("  -- many other languages supported. \n")
-        languages = ["English", "French", "German", "Spanish", "Italian", "Russian", "Japanese", "Arabic",
-                     "Chinese(Simplified)", "Chinese(Traditional)"]
+        languages = ["English", "French", "German", "Spanish", "Italian", "Russian", "Japanese", "Arabic", "Chinese(Simplified)", "Chinese(Traditional)"]
         language_codes = ["en", "fr", "de", "es", "it", "ru", "ja", "ar", "zh-CN", "zh-TW"]
         nonEnglish_sentences = ["I'm surprised to see just how amazingly helpful VADER is!",
                                 "Je suis surpris de voir comment VADER est incroyablement utile !",
@@ -686,7 +680,7 @@ if __name__ == '__main__':
                 response_json = json.loads(response.text)
                 translation = response_json["responseData"]["translatedText"]
                 translator_name = "MemoryNet Translation Service"
-            if (translation is not None):
+            if(translation is not None):
                 vs = analyzer.polarity_scores(translation)
                 print("- {: <8}: {: <69}\t {} ({})".format(languages[nonEnglish_sentences.index(sentence)], sentence,
                                                            str(vs['compound']), translator_name))
