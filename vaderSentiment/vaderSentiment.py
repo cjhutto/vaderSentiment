@@ -680,8 +680,9 @@ if __name__ == '__main__':
                 response_json = json.loads(response.text)
                 translation = response_json["responseData"]["translatedText"]
                 translator_name = "MemoryNet Translation Service"
-            vs = analyzer.polarity_scores(translation)
-            print("- {: <8}: {: <69}\t {} ({})".format(languages[nonEnglish_sentences.index(sentence)], sentence,
+            if(translation is not None):
+                vs = analyzer.polarity_scores(translation)
+                print("- {: <8}: {: <69}\t {} ({})".format(languages[nonEnglish_sentences.index(sentence)], sentence,
                                                        str(vs['compound']), translator_name))
         print("----------------------------------------------------")
 
