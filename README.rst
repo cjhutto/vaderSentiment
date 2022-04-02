@@ -195,7 +195,7 @@ Code Examples
                  "Today SUX!",  # negative slang with capitalization emphasis
                  "Today only kinda sux! But I'll get by, lol", # mixed sentiment example with slang and constrastive conjunction "but"
                  "Make sure you :) or :D today!",  # emoticons handled
-                 "Catch utf-8 emoji such as such as 💘 and 💋 and 😁",  # emojis handled
+                 "Catch utf-8 emoji such as 💘 and 💋 and 😁",  # emojis handled
                  "Not bad at all"  # Capitalized negation
                  ]
     
