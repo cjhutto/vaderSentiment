@@ -33,12 +33,15 @@ N_SCALAR = -0.74
 NEGATE = \
     ["aint", "arent", "cannot", "cant", "couldnt", "darent", "didnt", "doesnt",
      "ain't", "aren't", "can't", "couldn't", "daren't", "didn't", "doesn't",
+     "ain’t", "aren’t", "can’t", "couldn’t", "daren’t", "didn’t", "doesn’t",
      "dont", "hadnt", "hasnt", "havent", "isnt", "mightnt", "mustnt", "neither",
      "don't", "hadn't", "hasn't", "haven't", "isn't", "mightn't", "mustn't",
-     "neednt", "needn't", "never", "none", "nope", "nor", "not", "nothing", "nowhere",
+     "don’t", "hadn’t", "hasn’t", "haven’t", "isn’t", "mightn’t", "mustn’t",
+     "neednt", "needn't", "needn’t", "never", "none", "nope", "nor", "not", "nothing", "nowhere",
      "oughtnt", "shant", "shouldnt", "uhuh", "wasnt", "werent",
      "oughtn't", "shan't", "shouldn't", "uh-uh", "wasn't", "weren't",
-     "without", "wont", "wouldnt", "won't", "wouldn't", "rarely", "seldom", "despite"]
+     "oughtn’t", "shan't", "shouldn't", "wasn't", "weren’t",
+     "without", "wont", "wouldnt", "won't", "won’t", "wouldn't", "wouldn’t", "rarely", "seldom", "despite"]
 
 # booster/dampener 'intensifiers' or 'degree adverbs'
 # http://en.wiktionary.org/wiki/Category:English_degree_adverbs
@@ -280,7 +283,7 @@ class SentimentIntensityAnalyzer(object):
         words_and_emoticons = sentitext.words_and_emoticons
         item_lowercase = item.lower()
         if item_lowercase in self.lexicon:
-            # get the sentiment valence 
+            # get the sentiment valence
             valence = self.lexicon[item_lowercase]
 
             # check for "no" as negation for an adjacent lexicon item vs "no" as its own stand-alone lexicon item
