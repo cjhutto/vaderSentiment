@@ -40,6 +40,8 @@ NEGATE = \
      "oughtn't", "shan't", "shouldn't", "uh-uh", "wasn't", "weren't",
      "without", "wont", "wouldnt", "won't", "wouldn't", "rarely", "seldom", "despite"]
 
+NEGATE_SET = set(NEGATE)
+
 # booster/dampener 'intensifiers' or 'degree adverbs'
 # http://en.wiktionary.org/wiki/Category:English_degree_adverbs
 
@@ -87,15 +89,11 @@ def negated(input_words, include_nt=True):
     Determine if input contains negation words
     """
     input_words = [str(w).lower() for w in input_words]
-    neg_words = []
-    neg_words.extend(NEGATE)
-    for word in neg_words:
-        if word in input_words:
-            return True
+    if any(word in NEGATE_SET for word in input_words):
+        return True
     if include_nt:
-        for word in input_words:
-            if "n't" in word:
-                return True
+        if any("n't" in word for word in input_words):
+            return True
     '''if "least" in input_words:
         i = input_words.index("least")
         if i > 0 and input_words[i - 1] != "at":
