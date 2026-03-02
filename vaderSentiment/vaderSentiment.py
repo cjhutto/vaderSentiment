@@ -160,8 +160,16 @@ class SentiText(object):
     """
 
     def __init__(self, text):
-        if not isinstance(text, str):
-            text = str(text).encode('utf-8')
+        # Ensure self.text is always a str (unicode) for consistent processing.
+        # If bytes are passed, decode as utf-8. Otherwise coerce to str.
+        if isinstance(text, bytes):
+            try:
+                text = text.decode('utf-8')
+            except UnicodeDecodeError:
+                # fallback: decode with errors replaced so processing can continue
+                text = text.decode('utf-8', errors='replace')
+        elif not isinstance(text, str):
+            text = str(text)
         self.text = text
         self.words_and_emoticons = self._words_and_emoticons()
         # doesn't separate words from\
