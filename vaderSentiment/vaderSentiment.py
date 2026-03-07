@@ -610,9 +610,10 @@ if __name__ == '__main__':
     print(
         "  -- You could use NLTK to break the paragraph into sentence tokens for VADER, then average the results for the paragraph like this: \n")
     # simple example to tokenize paragraph into sentences for VADER
-    from nltk import tokenize
+    import nltk
+    nltk.download('punkt_tab')
 
-    sentence_list = tokenize.sent_tokenize(paragraph)
+    sentence_list = nltk.tokenize.sent_tokenize(paragraph)
     paragraphSentiments = 0.0
     for sentence in sentence_list:
         vs = analyzer.polarity_scores(sentence)
