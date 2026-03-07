@@ -278,3 +278,6 @@ Feel free to let me know about ports of VADER Sentiment to other programming lan
 
 #. R
 	`R Vader <https://cran.r-project.org/web/packages/vader/index.html>`_ by  Katie Roehrick
+	
+#. Lua
+	`LuaNLP <https://github.com/pncnmnp/LuaNLP/blob/main/sent/vader.lua>`_ by Parth Parikh
