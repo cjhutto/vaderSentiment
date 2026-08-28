@@ -1,0 +1,1344 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VADER Sentiment Analysis — Analyze customer reviews with VADER</title>
+  <meta name="description" content="Analyze customer reviews with VADER: rule-based sentiment scoring, radial gauge visualization, rating mismatch checks, and batch CSV dataset analytics.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'analyzer/style.css' %}">
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js" defer></script>
+</head>
+<body class="app-body">
+  <a class="skip-link" href="#main-workspace">Skip to content</a>
+
+  <!-- TOP APP HEADER -->
+  <header class="app-header">
+    <div class="app-header-inner">
+      <div class="brand-group">
+        <div class="brand-icon" aria-hidden="true">
+          <svg viewBox="0 0 40 40" width="36" height="36" fill="none">
+            <defs>
+              <linearGradient id="brand-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#0d9488" />
+                <stop offset="100%" stop-color="#0f766e" />
+              </linearGradient>
+            </defs>
+            <rect width="40" height="40" rx="10" fill="url(#brand-grad)" />
+            <path d="M10 26 16.8 11.5h2.4L26 26h-3l-1.4-3.3h-7.2L13 26H10Zm5.4-5.8h5.2l-2.6-5.8-2.6 5.8Z" fill="#ffffff"/>
+            <circle cx="29" cy="14" r="2.2" fill="#38bdf8" />
+            <path d="M29 18v8" stroke="#fed7aa" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <div class="brand-title-row">
+            <span class="brand-name">VADER Review Intelligence</span>
+          </div>
+          <h1 class="brand-subtitle">Analyze customer reviews with VADER</h1>
+        </div>
+      </div>
+
+      <!-- Engine Status & Navigation Shortcuts -->
+      <div class="header-actions">
+        <div class="telemetry-pill">
+          <span class="pulse-indicator" aria-hidden="true"></span>
+          <span class="telemetry-label">Lexicon:</span>
+          <strong class="telemetry-value">VADER 3.3.2</strong>
+        </div>
+        {% if history %}
+          <span class="history-count-badge" title="{{ history|length }} saved in current session">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            {{ history|length }} saved
+          </span>
+        {% endif %}
+        <a href="#quick-examples" class="btn-header-ghost" id="jump-examples-btn">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          <span>Examples</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAXIMIZED TWO-COLUMN WORKSPACE -->
+  <main id="main-workspace" class="studio-workspace">
+
+    <!-- LEFT COLUMN: INPUT WORKSPACE -->
+    <section class="studio-col studio-input-col" aria-label="Sentiment Input Workspace">
+      <div class="panel studio-panel input-panel-pro">
+        <div class="panel-header-pro">
+          <div class="panel-title-group">
+            <h2 class="panel-heading">Analyze Sentiment</h2>
+          </div>
+        </div>
+
+        <!-- TAB NAVIGATION SELECTOR -->
+        <div class="tabs-nav-pro" role="tablist" aria-label="Sentiment input modes" aria-orientation="horizontal">
+          <button type="button" class="tab-btn-pro active" role="tab" id="tab-btn-text" aria-selected="true" aria-controls="tab-pane-text" data-tab="text">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>
+            <span>Review Analysis</span>
+          </button>
+          <button type="button" class="tab-btn-pro" role="tab" id="tab-btn-url" aria-selected="false" aria-controls="tab-pane-url" data-tab="url">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            <span>Analyze via URL</span>
+          </button>
+          <button type="button" class="tab-btn-pro" role="tab" id="tab-btn-image" aria-selected="false" aria-controls="tab-pane-image" data-tab="image">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+            <span>Image OCR</span>
+          </button>
+          <button type="button" class="tab-btn-pro" role="tab" id="tab-btn-doc" aria-selected="false" aria-controls="tab-pane-doc" data-tab="doc">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h8M8 17h8M8 9h2"/></svg>
+            <span>Docs &amp; CSV Batch</span>
+          </button>
+        </div>
+
+        <!-- TAB 1: DIRECT REVIEW TEXT -->
+        <div id="tab-pane-text" class="tab-pane-pro active" role="tabpanel" aria-labelledby="tab-btn-text">
+          <form id="text-form" method="post" action="{% url 'analyze' %}" novalidate>
+            {% csrf_token %}
+            <input type="hidden" name="input_type" value="text">
+            
+            <div class="input-header-row">
+              <label for="text-input" class="input-label-pro">Review or social text</label>
+              <div class="textarea-stats-pill">
+                <span id="char-count" class="mono">0 chars</span>
+                <span class="stat-divider">•</span>
+                <span id="word-count" class="mono">0 words</span>
+              </div>
+            </div>
+
+            <div class="textarea-container-pro">
+              <textarea id="text-input" name="text" rows="6" required maxlength="4000" placeholder="The plot was good, but the characters are uncompelling and the dialog is not great.">{{ text }}</textarea>
+              <div class="textarea-floating-bar">
+                <span class="shortcut-hint"><kbd>⌘</kbd> / <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to analyze</span>
+                <button type="button" class="btn-mini-ghost" id="paste-text-btn" title="Paste from clipboard">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+                  Paste
+                </button>
+              </div>
+            </div>
+
+            <div class="translate-toggle-row">
+              <label class="translate-checkbox-label">
+                <input type="checkbox" id="translate-non-english-cb" name="translate_non_english" value="1" checked>
+                <span class="translate-checkbox-text">
+                  <strong>Translate non-English before scoring</strong>
+                  <span class="translate-checkbox-sub">Automatically translates detected foreign language text to English via MyMemory</span>
+                </span>
+              </label>
+              <input type="hidden" name="has_translate_option" value="1">
+            </div>
+
+            {% if error and active_tab == 'text' %}
+              <div class="error-banner" role="alert">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span>{{ error }}</span>
+              </div>
+            {% endif %}
+
+            <div class="actions-row-pro">
+              <button type="submit" id="analyze-text-btn" class="btn-pro-primary">
+                <span class="btn-icon">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                </span>
+                <span class="btn-text">Analyze sentiment</span>
+                <span class="spinner" aria-hidden="true"></span>
+              </button>
+              <button type="button" class="btn-pro-ghost" id="clear-text-btn">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                Clear
+              </button>
+            </div>
+          </form>
+
+          <!-- Categorized Sample Chips -->
+          <div class="examples-studio" id="quick-examples">
+            <div class="examples-header-row">
+              <span class="examples-label-pro">Try an example</span>
+            </div>
+            <div class="chip-grid-pro">
+              {% for example in examples %}
+                <button type="button" class="chip-pro" data-example="{{ example }}">
+                  <span class="chip-bullet"></span>
+                  <span class="chip-text">{{ example }}</span>
+                </button>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: URL & SOCIAL LINK EXTRACTION -->
+        <div id="tab-pane-url" class="tab-pane-pro" role="tabpanel" aria-labelledby="tab-btn-url" hidden>
+          <form id="url-form" method="post" action="{% url 'analyze' %}" novalidate>
+            {% csrf_token %}
+            <input type="hidden" name="input_type" value="url">
+            
+            <label for="url-input" class="input-label-pro">Public Webpage or Social Post URL</label>
+            <p class="hint-pro">Supports public X/Twitter, TikTok, Reddit, YouTube, Facebook, Instagram, LinkedIn, news, and article URLs.</p>
+            <p class="hint-pro"><strong>Public content only:</strong> login-only or private posts cannot be analyzed from their URL. Paste their text directly or use Image OCR.</p>
+            
+            <div class="url-input-container">
+              <span class="url-prefix-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"/></svg>
+              </span>
+              <input type="url" id="url-input" name="url" placeholder="https://social.example/post/... or https://example.com/article" required>
+            </div>
+
+            <div id="url-error" class="error-banner" role="alert" style="{% if error and active_tab == 'url' %}display: block;{% else %}display: none;{% endif %}">{% if error and active_tab == 'url' %}{{ error }}{% endif %}</div>
+
+            <div class="actions-row-pro">
+              <button type="submit" id="fetch-url-btn" class="btn-pro-primary">
+                <span class="btn-icon">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                </span>
+                <span class="btn-text">Fetch &amp; Analyze URL</span>
+                <span class="spinner" aria-hidden="true"></span>
+              </button>
+              <button type="button" class="btn-pro-ghost" id="clear-url-btn">Clear</button>
+            </div>
+          </form>
+
+          <div id="url-preview-card" class="preview-card-pro" style="display: none;">
+            <div class="preview-header-pro">
+              <span class="badge badge-url">Extracted Web Content</span>
+              <h4 id="url-preview-title" class="preview-title-pro"></h4>
+            </div>
+            <p id="url-preview-text" class="preview-snippet-pro"></p>
+          </div>
+
+          <div class="examples-studio">
+            <span class="examples-label-pro">Try sample URLs</span>
+            <div class="chip-grid-pro">
+              {% for item in url_examples %}
+                <button type="button" class="chip-pro chip-url-pro" data-url="{{ item.url }}">
+                  <strong class="chip-title">{{ item.label }}</strong>
+                  <span class="chip-sub-url">{{ item.url }}</span>
+                </button>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: IMAGE OCR SCANNER -->
+        <div id="tab-pane-image" class="tab-pane-pro" role="tabpanel" aria-labelledby="tab-btn-image" hidden>
+          <label class="input-label-pro">Upload or Paste Image for Text OCR</label>
+          <p class="hint-pro">Upload a screenshot, quote card, tweet capture, or photo. Text is extracted automatically via on-device OCR.</p>
+
+          <div id="image-dropzone" class="dropzone-pro" tabindex="0" role="button" aria-label="Upload image for OCR">
+            <input type="file" id="image-file-input" accept="image/*" class="sr-only" aria-label="Choose image for text recognition">
+            <div class="dropzone-content-pro">
+              <div class="dropzone-icon-circle" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+              </div>
+              <p class="dropzone-lead"><strong>Drop image here</strong>, click to browse, or paste (<kbd>Cmd+V</kbd> / <kbd>Ctrl+V</kbd>)</p>
+              <p class="dropzone-sub">Supports PNG, JPG, JPEG, WEBP, GIF, BMP</p>
+            </div>
+          </div>
+
+          <div id="image-preview-container" class="image-preview-pro" style="display: none;">
+            <div class="image-thumb-pro">
+              <img id="image-preview-img" src="" alt="Uploaded source preview">
+              <button type="button" id="remove-img-btn" class="btn-thumb-remove" title="Remove image" aria-label="Remove image">&times;</button>
+            </div>
+            <div class="ocr-progress-pro">
+              <div class="ocr-status-row">
+                <span id="ocr-status-text" class="ocr-status-label">Recognizing text from image...</span>
+                <span id="ocr-progress-pct" class="mono ocr-pct-badge">0%</span>
+              </div>
+              <div class="progress-bar-track-pro">
+                <div id="ocr-progress-fill" class="progress-bar-fill-pro" style="width: 0%;"></div>
+              </div>
+            </div>
+          </div>
+
+          <form id="ocr-form" method="post" action="{% url 'analyze' %}" novalidate>
+            {% csrf_token %}
+            <input type="hidden" name="input_type" value="image">
+            
+            <label for="ocr-text-result" class="input-label-pro" style="margin-top: 18px;">Extracted Image Text</label>
+            <div class="textarea-container-pro">
+              <textarea id="ocr-text-result" name="ocr_text" rows="5" placeholder="Recognized text will appear here. You can edit it before analyzing."></textarea>
+            </div>
+            
+            <div id="ocr-error" class="error-banner" role="alert" style="{% if error and active_tab == 'image' %}display: block;{% else %}display: none;{% endif %}">{% if error and active_tab == 'image' %}{{ error }}{% endif %}</div>
+            
+            <div class="actions-row-pro">
+              <button type="submit" id="analyze-ocr-btn" class="btn-pro-primary" disabled>
+                <span class="btn-icon">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                </span>
+                <span class="btn-text">Analyze Extracted Text</span>
+                <span class="spinner" aria-hidden="true"></span>
+              </button>
+              <button type="button" class="btn-pro-ghost" id="clear-ocr-btn">Reset</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- TAB 4: DOCS & CSV BATCH STUDIO -->
+        <div id="tab-pane-doc" class="tab-pane-pro" role="tabpanel" aria-labelledby="tab-btn-doc" hidden>
+          <label class="input-label-pro">Upload a document or review dataset</label>
+          <p class="hint-pro">Upload a <strong>PDF</strong>, <strong>TXT</strong>, or <strong>CSV dataset</strong>. CSV files can batch-score customer reviews and compare them with star ratings.</p>
+
+          <div class="workflow-steps-pro" aria-label="CSV analysis workflow">
+            <div class="wf-step-item">
+              <span class="wf-step-num">1</span>
+              <div class="wf-step-body">
+                <strong>Review scoring</strong>
+                <span>Detect review column &amp; score</span>
+              </div>
+            </div>
+            <div class="wf-step-item">
+              <span class="wf-step-num">2</span>
+              <div class="wf-step-body">
+                <strong>Rating mismatch analysis</strong>
+                <span>Compare 1–5 stars with sentiment</span>
+              </div>
+            </div>
+            <div class="wf-step-item">
+              <span class="wf-step-num">3</span>
+              <div class="wf-step-body">
+                <strong>Export results</strong>
+                <span>Download scored dataset</span>
+              </div>
+            </div>
+          </div>
+
+          <div id="doc-dropzone" class="dropzone-pro" tabindex="0" role="button" aria-label="Upload document or CSV">
+            <input type="file" id="doc-file-input" accept=".pdf,.txt,.md,.json,.csv" class="sr-only" aria-label="Choose document or CSV dataset">
+            <div class="dropzone-content-pro">
+              <div class="dropzone-icon-circle" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h8M8 17h8"/></svg>
+              </div>
+              <p class="dropzone-lead"><strong>Drop file here</strong> or click to select</p>
+              <p class="dropzone-sub">Supported: PDF (.pdf), Text (.txt, .md), CSV datasets (.csv)</p>
+            </div>
+          </div>
+
+          <div id="doc-file-info" class="file-badge-pro" style="display: none;">
+            <div class="file-badge-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            <div class="file-badge-details">
+              <span id="doc-file-name" class="file-name-text">filename.pdf</span>
+              <span id="doc-file-size" class="file-size-mono mono">0 KB</span>
+            </div>
+            <button type="button" id="remove-doc-btn" class="btn-file-remove" title="Remove file" aria-label="Remove file">&times;</button>
+          </div>
+
+          <div id="csv-column-selector" class="column-picker-pro" style="display: none;">
+            <label for="csv-column-select" class="picker-label">Text Column to Analyze:</label>
+            <select id="csv-column-select" class="form-select-pro"></select>
+          </div>
+
+          <div id="doc-error" class="error-banner" role="alert" style="{% if error and active_tab == 'document' %}display: block;{% else %}display: none;{% endif %}">{% if error and active_tab == 'document' %}{{ error }}{% endif %}</div>
+
+          <div class="actions-row-pro">
+            <button type="button" id="process-doc-btn" class="btn-pro-primary" disabled>
+              <span class="btn-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              </span>
+              <span class="btn-text">Process &amp; Analyze</span>
+              <span class="spinner" aria-hidden="true"></span>
+            </button>
+            <button type="button" class="btn-pro-ghost" id="clear-doc-btn">Clear</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RECENT ANALYSES DRAWER / QUICK HISTORY -->
+      {% if history %}
+        <div class="panel studio-panel history-dock-pro" aria-labelledby="history-heading">
+          <div class="history-header-pro">
+            <div class="history-title-group">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <h3 id="history-heading" class="history-title">Recent analyses</h3>
+            </div>
+            <span class="badge badge-count">{{ history|length }} saved</span>
+          </div>
+          <ul class="history-list-pro" id="history-list">
+            {% for item in history %}
+              <li class="history-item-pro history-item" data-text="{{ item.text }}" tabindex="0" role="button" aria-label="Reload analysis: {{ item.text|truncatechars:40 }}">
+                <div class="history-item-top">
+                  <span class="pill pill-{{ item.label }}">{{ item.label }}</span>
+                  {% if item.source_type and item.source_type != "text" %}
+                    <span class="badge badge-sub badge-{{ item.source_type }}">{{ item.source_type|upper }}</span>
+                  {% endif %}
+                  <span class="mono history-score">{{ item.compound|floatformat:4 }}</span>
+                </div>
+                <p class="history-text-snippet">{{ item.text }}</p>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+    </section>
+
+    <!-- RIGHT COLUMN: SENTIMENT ANALYSIS & RESULTS -->
+    <section class="studio-col studio-results-col" id="result-panel" aria-live="polite" aria-label="Sentiment Results">
+      
+      <!-- BATCH CSV RESULT VIEW -->
+      <div id="batch-result-container" class="batch-results-hub" style="display: {% if batch_result %}block{% else %}none{% endif %};">
+        {% if batch_result %}
+          <div class="panel studio-panel batch-summary-panel">
+            <div class="batch-header-pro">
+              <div>
+                <span class="panel-kicker">Review dataset analysis</span>
+                <h3 class="batch-title-pro">{{ batch_result.total_rows }} reviews analyzed</h3>
+                <p class="batch-sub-meta">Review column: <strong>{{ batch_result.selected_column }}</strong>{% if batch_result.rating_column %} · Rating column: <strong>{{ batch_result.rating_column }}</strong>{% endif %}</p>
+              </div>
+              <form method="post" action="{% url 'export_batch_csv' %}" id="batch-export-form">
+                {% csrf_token %}
+                <button type="submit" class="btn-pro-secondary">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                  <span>Export Scored CSV</span>
+                </button>
+              </form>
+            </div>
+
+            {% if batch_result.non_english_count %}
+              <div class="batch-lang-notice">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span><strong>{{ batch_result.non_english_count }} non-English review(s) detected:</strong> Batch CSV uses detect-only mode (per-row network translation is skipped). Scored using standard English lexicon.</span>
+              </div>
+            {% endif %}
+
+            <!-- KPI Metric Grid -->
+            <div class="batch-kpi-grid">
+              <div class="kpi-card kpi-pos">
+                <span class="kpi-label">Positive</span>
+                <span class="kpi-value">{{ batch_result.pos_pct }}%</span>
+                <span class="kpi-sub">{{ batch_result.pos_count }} rows</span>
+              </div>
+              <div class="kpi-card kpi-neu">
+                <span class="kpi-label">Neutral</span>
+                <span class="kpi-value">{{ batch_result.neu_pct }}%</span>
+                <span class="kpi-sub">{{ batch_result.neu_count }} rows</span>
+              </div>
+              <div class="kpi-card kpi-neg">
+                <span class="kpi-label">Negative</span>
+                <span class="kpi-value">{{ batch_result.neg_pct }}%</span>
+                <span class="kpi-sub">{{ batch_result.neg_count }} rows</span>
+              </div>
+              <div class="kpi-card kpi-compound">
+                <span class="kpi-label">Avg Compound</span>
+                <span class="kpi-value mono">{{ batch_result.avg_compound }}</span>
+                <span class="kpi-sub pill pill-{{ batch_result.avg_label }}">{{ batch_result.avg_label|title }}</span>
+              </div>
+              {% if batch_result.rating_column %}
+                <div class="kpi-card kpi-mismatch">
+                  <span class="kpi-label">Rating mismatch</span>
+                  <span class="kpi-value">{{ batch_result.mismatch_pct }}%</span>
+                  <span class="kpi-sub">{{ batch_result.mismatch_count }} of {{ batch_result.rated_rows }} rated reviews</span>
+                </div>
+              {% endif %}
+            </div>
+
+            {% if batch_result.rating_column %}
+              <div class="batch-alignment-box" role="status">
+                <div class="align-col align-match">
+                  <span class="align-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 12.5 10.5 15 16 9.5"/><circle cx="12" cy="12" r="9"/></svg>
+                  </span>
+                  <div>
+                    <strong>{{ batch_result.match_count }} aligned reviews</strong>
+                    <p>Written sentiment agrees with the supplied star rating.</p>
+                  </div>
+                </div>
+                <div class="align-col align-mismatch">
+                  <span class="align-icon mismatch" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m9 9 6 6m0-6-6 6"/><circle cx="12" cy="12" r="9"/></svg>
+                  </span>
+                  <div>
+                    <strong>{{ batch_result.mismatch_count }} possible mismatches</strong>
+                    <p>Review language and star rating tell different stories.</p>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+
+            <!-- High-Density Batch Table -->
+            <div class="batch-table-container">
+              <table class="batch-table-pro">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Sentiment</th>
+                    <th>Compound</th>
+                    {% if batch_result.rating_column %}
+                      <th>Rating</th>
+                      <th>Alignment</th>
+                    {% endif %}
+                    <th>Review Content</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for r in batch_result.rows|slice:":30" %}
+                    <tr>
+                      <td class="mono col-id">{{ r.id }}</td>
+                      <td><span class="pill pill-{{ r.label }}">{{ r.label }}</span></td>
+                      <td class="mono col-compound">{{ r.compound|floatformat:4 }}</td>
+                      {% if batch_result.rating_column %}
+                        <td class="mono col-rating">{% if r.rating %}{{ r.rating|floatformat:1 }} ★{% else %}—{% endif %}</td>
+                        <td>
+                          {% if r.is_mismatch is True %}<span class="alignment-status is-mismatch">Mismatch</span>
+                          {% elif r.is_mismatch is False %}<span class="alignment-status is-match">Aligned</span>
+                          {% else %}<span class="alignment-status">Not rated</span>{% endif %}
+                        </td>
+                      {% endif %}
+                      <td class="batch-text-cell">
+                        {% if r.is_non_english %}
+                          <span class="batch-lang-badge" title="Detected {{ r.language.name }}">{{ r.language.code|upper }}</span>
+                        {% endif %}
+                        {{ r.text }}
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- SINGLE ANALYSIS RESULT VIEW -->
+      <div id="single-result-container" class="single-results-hub" style="display: {% if result and not batch_result %}block{% else %}none{% endif %};">
+        {% if result %}
+          {% include "analyzer/_result_panel.html" %}
+        {% endif %}
+      </div>
+
+      <!-- EMPTY STATE -->
+      <div id="empty-result-state" class="panel studio-panel empty-canvas-pro empty" style="display: {% if not result and not batch_result %}flex{% else %}none{% endif %};">
+        <div class="empty-icon-ring" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6">
+            <path d="M4 19V5a1 1 0 0 1 1-1h10l5 5v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1Z"/>
+            <path d="M14 4v5h5M8 13h8M8 17h5"/>
+          </svg>
+        </div>
+        <h2 class="empty-heading-pro">No sentiment analysis yet</h2>
+        <p class="empty-desc-pro">Enter review text on the left, fetch a public URL, upload an image with text, or process a CSV dataset to view the sentiment breakdown.</p>
+        
+        <div class="threshold-guide-pro threshold-guide" aria-label="VADER classification thresholds">
+          <div class="th-item th-neg">
+            <span class="th-dot neg threshold-dot negative"></span>
+            <span>&le; −0.05 Negative</span>
+          </div>
+          <div class="th-item th-neu">
+            <span class="th-dot neu threshold-dot neutral"></span>
+            <span>Between thresholds Neutral</span>
+          </div>
+          <div class="th-item th-pos">
+            <span class="th-dot pos threshold-dot positive"></span>
+            <span>&ge; 0.05 Positive</span>
+          </div>
+        </div>
+
+        <div class="empty-features-grid">
+          <div class="empty-feat-card">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <strong>Lexicon-Based Scoring</strong>
+            <span>Evaluates sentiment intensity, negation, capitalization, and punctuation rules.</span>
+          </div>
+          <div class="empty-feat-card">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <strong>Rating Mismatch Detection</strong>
+            <span>Identifies discrepancies between customer review text and 1–5 star ratings.</span>
+          </div>
+          <div class="empty-feat-card">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg>
+            <strong>Multi-Source Ingestion</strong>
+            <span>Analyze direct text, public web articles, social posts, images, and CSV batches.</span>
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- APP FOOTER -->
+  <footer class="app-footer site-footer">
+    <div class="app-footer-inner">
+      <p class="footer-note">Powered by <strong>VADER Sentiment</strong> (Hutto &amp; Gilbert, 2014). Results are heuristic signals designed to support—not replace—human review.</p>
+      <p class="footer-credit site-footer-credit">Rule-based sentiment analysis for customer feedback</p>
+    </div>
+  </footer>
+
+  <!-- CLIENT INTERACTION SCRIPT -->
+  <script src="{% static 'analyzer/result-runtime.js' %}"></script>
+  <script>
+    (function () {
+      "use strict";
+
+      function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+            }
+          }
+        }
+        return cookieValue;
+      }
+      const csrftoken = getCookie('csrftoken');
+
+      function escapeHtml(value) {
+        return String(value ?? "").replace(/[&<>'"]/g, char => ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          "'": "&#39;",
+          '"': "&quot;"
+        })[char]);
+      }
+
+      // TABS LOGIC
+      const tabButtons = document.querySelectorAll(".tab-btn-pro, .tab-btn");
+      const tabPanes = document.querySelectorAll(".tab-pane-pro, .tab-pane");
+
+      function switchTab(targetTab) {
+        tabButtons.forEach(btn => {
+          const isTarget = btn.getAttribute("data-tab") === targetTab;
+          btn.classList.toggle("active", isTarget);
+          btn.setAttribute("aria-selected", isTarget ? "true" : "false");
+        });
+        tabPanes.forEach(pane => {
+          const isTarget = pane.id === `tab-pane-${targetTab}`;
+          pane.classList.toggle("active", isTarget);
+          pane.hidden = !isTarget;
+        });
+      }
+
+      tabButtons.forEach((btn, index) => {
+        btn.addEventListener("click", () => switchTab(btn.getAttribute("data-tab")));
+        btn.addEventListener("keydown", event => {
+          let nextIndex = null;
+          if (event.key === "ArrowRight") nextIndex = (index + 1) % tabButtons.length;
+          if (event.key === "ArrowLeft") nextIndex = (index - 1 + tabButtons.length) % tabButtons.length;
+          if (event.key === "Home") nextIndex = 0;
+          if (event.key === "End") nextIndex = tabButtons.length - 1;
+          if (nextIndex === null) return;
+          event.preventDefault();
+          const nextTab = tabButtons[nextIndex];
+          switchTab(nextTab.getAttribute("data-tab"));
+          nextTab.focus();
+        });
+      });
+
+      switchTab("{{ active_tab|escapejs }}");
+
+      // TEXT STATS COUNTER
+      const textInput = document.getElementById("text-input");
+      const charCount = document.getElementById("char-count");
+      const wordCount = document.getElementById("word-count");
+
+      function updateStats() {
+        if (!textInput) return;
+        const val = textInput.value;
+        if (charCount) charCount.textContent = `${val.length} chars`;
+        const words = val.trim() ? val.trim().split(/\s+/).length : 0;
+        if (wordCount) wordCount.textContent = `${words} words`;
+      }
+      if (textInput) {
+        textInput.addEventListener("input", updateStats);
+        updateStats();
+
+        // Keyboard Shortcut: Cmd/Ctrl + Enter to submit form
+        textInput.addEventListener("keydown", function(e) {
+          if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+            e.preventDefault();
+            const submitBtn = document.getElementById("analyze-text-btn");
+            if (submitBtn) submitBtn.click();
+          }
+        });
+      }
+
+      // PASTE FROM CLIPBOARD BUTTON
+      const pasteTextBtn = document.getElementById("paste-text-btn");
+      if (pasteTextBtn && textInput) {
+        pasteTextBtn.addEventListener("click", async () => {
+          try {
+            const clipText = await navigator.clipboard.readText();
+            if (clipText) {
+              textInput.value = clipText;
+              textInput.focus();
+              updateStats();
+            }
+          } catch (err) {
+            textInput.focus();
+          }
+        });
+      }
+
+      const textForm = document.getElementById("text-form");
+      if (textForm) {
+        textForm.addEventListener("submit", event => {
+          if (!textForm.checkValidity()) return;
+          const submitButton = document.getElementById("analyze-text-btn");
+          if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.classList.add("loading");
+            submitButton.setAttribute("aria-busy", "true");
+          }
+        });
+      }
+
+      document.querySelectorAll("[data-example]").forEach(chip => {
+        chip.addEventListener("click", () => {
+          switchTab("text");
+          if (textInput) {
+            textInput.value = chip.getAttribute("data-example");
+            textInput.focus();
+            updateStats();
+          }
+        });
+      });
+
+      const clearTextBtn = document.getElementById("clear-text-btn");
+      if (clearTextBtn) {
+        clearTextBtn.addEventListener("click", () => {
+          if (textInput) {
+            textInput.value = "";
+            textInput.focus();
+            updateStats();
+          }
+        });
+      }
+
+      document.querySelectorAll("[data-url]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const urlInput = document.getElementById("url-input");
+          if (urlInput) {
+            urlInput.value = btn.getAttribute("data-url");
+            urlInput.focus();
+          }
+        });
+      });
+
+      const clearUrlBtn = document.getElementById("clear-url-btn");
+      if (clearUrlBtn) {
+        clearUrlBtn.addEventListener("click", () => {
+          const urlInput = document.getElementById("url-input");
+          if (urlInput) {
+            urlInput.value = "";
+            urlInput.focus();
+          }
+          const errBox = document.getElementById("url-error");
+          if (errBox) errBox.style.display = "none";
+          const prevCard = document.getElementById("url-preview-card");
+          if (prevCard) prevCard.style.display = "none";
+        });
+      }
+
+
+
+      // ACTIVE RESULT CACHE
+      let activeSentimentResult = {% if result %}{
+        text: `{{ result.text|escapejs }}`,
+        compound: {{ result.compound }},
+        label: `{{ result.label }}`,
+        pos: {{ result.pos }},
+        neu: {{ result.neu }},
+        neg: {{ result.neg }},
+        pos_pct: {{ result.pos_pct }},
+        neu_pct: {{ result.neu_pct }},
+        neg_pct: {{ result.neg_pct }},
+        compound_pct: {{ result.compound_pct }},
+        needle_angle: {{ result.needle_angle }},
+        source_type: `{{ result.source_type }}`,
+        source_title: `{{ result.source_title|escapejs }}`,
+        source_url: `{{ result.source_url|escapejs }}`,
+        plain_summary: `{{ result.plain_summary|escapejs }}`
+      }{% else %}null{% endif %};
+
+      // REPORT DROPDOWN & EXPORT ACTIONS
+      function submitReportForm(actionUrl, target = "_blank") {
+        if (!activeSentimentResult || !activeSentimentResult.text) return;
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = actionUrl;
+        form.target = target;
+        form.style.display = "none";
+
+        const csrfInput = document.createElement("input");
+        csrfInput.type = "hidden";
+        csrfInput.name = "csrfmiddlewaretoken";
+        csrfInput.value = csrftoken || "";
+        form.appendChild(csrfInput);
+
+        const textInput = document.createElement("input");
+        textInput.type = "hidden";
+        textInput.name = "text";
+        textInput.value = activeSentimentResult.text;
+        form.appendChild(textInput);
+
+        const sourceInput = document.createElement("input");
+        sourceInput.type = "hidden";
+        sourceInput.name = "source_type";
+        sourceInput.value = activeSentimentResult.source_type || "text";
+        form.appendChild(sourceInput);
+
+        const titleInput = document.createElement("input");
+        titleInput.type = "hidden";
+        titleInput.name = "source_title";
+        titleInput.value = activeSentimentResult.source_title || "";
+        form.appendChild(titleInput);
+
+        const urlInput = document.createElement("input");
+        urlInput.type = "hidden";
+        urlInput.name = "source_url";
+        urlInput.value = activeSentimentResult.source_url || "";
+        form.appendChild(urlInput);
+
+        document.body.appendChild(form);
+        form.submit();
+        setTimeout(() => form.remove(), 1000);
+      }
+
+      document.addEventListener("click", event => {
+        const toggle = event.target.closest("#btn-report-toggle");
+        const reportMenu = document.getElementById("report-dropdown-menu");
+        const liveToggle = document.getElementById("btn-report-toggle");
+
+        if (toggle && reportMenu) {
+          event.stopPropagation();
+          const isShown = reportMenu.style.display === "block";
+          reportMenu.style.display = isShown ? "none" : "block";
+          toggle.setAttribute("aria-expanded", isShown ? "false" : "true");
+          return;
+        }
+
+        if (event.target.closest("#btn-export-pdf")) {
+          submitReportForm("/report/", "_blank");
+        } else if (event.target.closest("#btn-export-html")) {
+          submitReportForm("/export/report-html/", "_self");
+        } else if (event.target.closest("#btn-export-json")) {
+          if (!activeSentimentResult) return;
+          const jsonBlob = new Blob([JSON.stringify({
+            report_name: "VADER Sentiment Analysis Report",
+            timestamp: new Date().toISOString(),
+            data: activeSentimentResult
+          }, null, 2)], { type: "application/json" });
+          const a = document.createElement("a");
+          const objectUrl = URL.createObjectURL(jsonBlob);
+          a.href = objectUrl;
+          a.download = `vader_sentiment_report_${Date.now()}.json`;
+          a.click();
+          URL.revokeObjectURL(objectUrl);
+        }
+
+        if (reportMenu) reportMenu.style.display = "none";
+        if (liveToggle) liveToggle.setAttribute("aria-expanded", "false");
+      });
+
+      function renderBatchResult(batch) {
+        const emptyState = document.getElementById("empty-result-state");
+        const singleContainer = document.getElementById("single-result-container");
+        const batchContainer = document.getElementById("batch-result-container");
+        const hasRatings = Boolean(batch.rating_column && batch.rated_rows);
+
+        if (emptyState) emptyState.style.display = "none";
+        if (singleContainer) singleContainer.style.display = "none";
+        if (batchContainer) {
+          batchContainer.style.display = "block";
+          batchContainer.innerHTML = `
+            <div class="panel studio-panel batch-summary-panel">
+              <div class="batch-header-pro">
+                <div>
+                  <span class="panel-kicker">Review dataset analysis</span>
+                  <h3 class="batch-title-pro">${batch.total_rows} reviews analyzed</h3>
+                  <p class="batch-sub-meta">Review column: <strong>${escapeHtml(batch.selected_column)}</strong>${hasRatings ? ` · Rating column: <strong>${escapeHtml(batch.rating_column)}</strong>` : ""}</p>
+                </div>
+              </div>
+
+              <div class="batch-kpi-grid">
+                <div class="kpi-card kpi-pos">
+                  <span class="kpi-label">Positive</span>
+                  <span class="kpi-value">${batch.pos_pct}%</span>
+                  <span class="kpi-sub">${batch.pos_count} rows</span>
+                </div>
+                <div class="kpi-card kpi-neu">
+                  <span class="kpi-label">Neutral</span>
+                  <span class="kpi-value">${batch.neu_pct}%</span>
+                  <span class="kpi-sub">${batch.neu_count} rows</span>
+                </div>
+                <div class="kpi-card kpi-neg">
+                  <span class="kpi-label">Negative</span>
+                  <span class="kpi-value">${batch.neg_pct}%</span>
+                  <span class="kpi-sub">${batch.neg_count} rows</span>
+                </div>
+                <div class="kpi-card kpi-compound">
+                  <span class="kpi-label">Avg Compound</span>
+                  <span class="kpi-value mono">${batch.avg_compound}</span>
+                  <span class="kpi-sub pill pill-${batch.avg_label}">${batch.avg_label}</span>
+                </div>
+                ${hasRatings ? `
+                  <div class="kpi-card kpi-mismatch">
+                    <span class="kpi-label">Rating mismatch</span>
+                    <span class="kpi-value">${batch.mismatch_pct}%</span>
+                    <span class="kpi-sub">${batch.mismatch_count} of ${batch.rated_rows} rated reviews</span>
+                  </div>
+                ` : ""}
+              </div>
+
+              ${hasRatings ? `
+                <div class="batch-alignment-box" role="status">
+                  <div class="align-col align-match">
+                    <span class="align-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 12.5 10.5 15 16 9.5"/><circle cx="12" cy="12" r="9"/></svg></span>
+                    <div>
+                      <strong>${batch.match_count} aligned reviews</strong>
+                      <p>Written sentiment agrees with the supplied star rating.</p>
+                    </div>
+                  </div>
+                  <div class="align-col align-mismatch">
+                    <span class="align-icon mismatch" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m9 9 6 6m0-6-6 6"/><circle cx="12" cy="12" r="9"/></svg></span>
+                    <div>
+                      <strong>${batch.mismatch_count} possible mismatches</strong>
+                      <p>Review language and star rating tell different stories.</p>
+                    </div>
+                  </div>
+                </div>
+              ` : ""}
+
+              <div class="batch-table-container">
+                <table class="batch-table-pro">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Sentiment</th>
+                      <th>Compound</th>
+                      ${hasRatings ? "<th>Rating</th><th>Alignment</th>" : ""}
+                      <th>Review Content</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${batch.rows.slice(0, 35).map(r => `
+                      <tr>
+                        <td class="mono col-id">${r.id}</td>
+                        <td><span class="pill pill-${r.label}">${r.label}</span></td>
+                        <td class="mono col-compound">${Number(r.compound).toFixed(4)}</td>
+                        ${hasRatings ? `
+                          <td class="mono col-rating">${r.rating ? `${Number(r.rating).toFixed(1)} ★` : "—"}</td>
+                          <td>${r.is_mismatch === true
+                            ? '<span class="alignment-status is-mismatch">Mismatch</span>'
+                            : r.is_mismatch === false
+                              ? '<span class="alignment-status is-match">Aligned</span>'
+                              : '<span class="alignment-status">Not rated</span>'}</td>
+                        ` : ""}
+                        <td class="batch-text-cell">${escapeHtml(r.text)}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+        }
+      }
+
+      // DYNAMIC RESULT RENDERING
+      function getTranslateSetting() {
+        const cb = document.getElementById("translate-non-english-cb");
+        return cb ? cb.checked : true;
+      }
+
+      function renderSentimentResult(result, resultHtml) {
+        const emptyState = document.getElementById("empty-result-state");
+        const batchContainer = document.getElementById("batch-result-container");
+        const singleContainer = document.getElementById("single-result-container");
+
+        window.VaderResultRuntime.mountResultHtml(singleContainer, resultHtml);
+        activeSentimentResult = result;
+        window.activeAnalysisPayload = result;
+
+        if (emptyState) emptyState.style.display = "none";
+        if (batchContainer) batchContainer.style.display = "none";
+        singleContainer.style.display = "block";
+      }
+
+      // URL FORM HANDLER
+      const urlForm = document.getElementById("url-form");
+      if (urlForm) {
+        urlForm.addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const urlInput = document.getElementById("url-input");
+          const errBox = document.getElementById("url-error");
+          const btn = document.getElementById("fetch-url-btn");
+          const prevCard = document.getElementById("url-preview-card");
+          const prevTitle = document.getElementById("url-preview-title");
+          const prevText = document.getElementById("url-preview-text");
+
+          const url = urlInput.value.trim();
+          if (!url) {
+            errBox.textContent = "Please enter a valid URL.";
+            errBox.style.display = "block";
+            return;
+          }
+
+          errBox.style.display = "none";
+          btn.classList.add("loading");
+          btn.disabled = true;
+
+          try {
+            const data = await window.VaderResultRuntime.fetchJsonWithRetry(fetch, "/api/analyze-url/", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrftoken || "",
+              },
+              body: JSON.stringify({ 
+                url: url,
+                translate_non_english: getTranslateSetting(),
+              }),
+            });
+
+            if (prevCard && data.extracted) {
+              prevTitle.textContent = data.extracted.title || url;
+              prevText.textContent = data.extracted.text;
+              prevCard.style.display = "block";
+            }
+
+            renderSentimentResult(data.result, data.result_html);
+          } catch (err) {
+            errBox.textContent = err.message;
+            errBox.style.display = "block";
+          } finally {
+            btn.classList.remove("loading");
+            btn.disabled = false;
+          }
+        });
+      }
+
+      // IMAGE OCR
+      const imageDropzone = document.getElementById("image-dropzone");
+      const imageFileInput = document.getElementById("image-file-input");
+      const imagePreviewBox = document.getElementById("image-preview-container");
+      const imagePreviewImg = document.getElementById("image-preview-img");
+      const removeImgBtn = document.getElementById("remove-img-btn");
+      const ocrStatusText = document.getElementById("ocr-status-text");
+      const ocrProgressPct = document.getElementById("ocr-progress-pct");
+      const ocrProgressFill = document.getElementById("ocr-progress-fill");
+      const ocrTextResult = document.getElementById("ocr-text-result");
+      const analyzeOcrBtn = document.getElementById("analyze-ocr-btn");
+      const clearOcrBtn = document.getElementById("clear-ocr-btn");
+      const ocrError = document.getElementById("ocr-error");
+
+      let activeOcrImageFile = null;
+
+      if (imageDropzone && imageFileInput) {
+        imageDropzone.addEventListener("click", () => imageFileInput.click());
+        imageDropzone.addEventListener("keydown", e => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            imageFileInput.click();
+          }
+        });
+
+        imageDropzone.addEventListener("dragover", e => {
+          e.preventDefault();
+          imageDropzone.classList.add("dragover");
+        });
+        imageDropzone.addEventListener("dragleave", () => imageDropzone.classList.remove("dragover"));
+        imageDropzone.addEventListener("drop", e => {
+          e.preventDefault();
+          imageDropzone.classList.remove("dragover");
+          if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            handleImageSelected(e.dataTransfer.files[0]);
+          }
+        });
+
+        imageFileInput.addEventListener("change", e => {
+          if (e.target.files && e.target.files[0]) {
+            handleImageSelected(e.target.files[0]);
+          }
+        });
+
+        window.addEventListener("paste", e => {
+          const items = e.clipboardData && e.clipboardData.items;
+          if (!items) return;
+          for (let i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf("image") !== -1) {
+              const file = items[i].getAsFile();
+              if (file) {
+                switchTab("image");
+                handleImageSelected(file);
+                break;
+              }
+            }
+          }
+        });
+      }
+
+      function handleImageSelected(file) {
+        if (!file.type.startsWith("image/")) {
+          alert("Please upload a valid image file (PNG, JPG, WEBP, etc.)");
+          return;
+        }
+
+        activeOcrImageFile = file;
+        if (ocrError) ocrError.style.display = "none";
+        imagePreviewImg.src = URL.createObjectURL(file);
+        imagePreviewBox.style.display = "flex";
+        imageDropzone.style.display = "none";
+
+        runTesseractOcr(file);
+      }
+
+      async function runTesseractOcr(file) {
+        ocrStatusText.textContent = "Initializing OCR Engine...";
+        ocrProgressPct.textContent = "0%";
+        ocrProgressFill.style.width = "0%";
+        analyzeOcrBtn.disabled = true;
+
+        if (typeof Tesseract === "undefined") {
+          ocrStatusText.textContent = "Loading OCR library...";
+        }
+
+        try {
+          const worker = await Tesseract.createWorker("eng", 1, {
+            logger: m => {
+              if (m.status === "recognizing text") {
+                const pct = Math.round(m.progress * 100);
+                ocrStatusText.textContent = `Recognizing text (${pct}%)...`;
+                ocrProgressPct.textContent = `${pct}%`;
+                ocrProgressFill.style.width = `${pct}%`;
+              } else if (m.status) {
+                ocrStatusText.textContent = m.status;
+              }
+            }
+          });
+
+          const { data: { text } } = await worker.recognize(file);
+          await worker.terminate();
+
+          const cleanText = text.trim();
+          ocrProgressFill.style.width = "100%";
+          ocrProgressPct.textContent = "100%";
+
+          if (!cleanText) {
+            ocrStatusText.textContent = "OCR finished, but no readable text detected.";
+            ocrError.textContent = "No text could be extracted. Try cropping or using a higher-contrast image.";
+            ocrError.style.display = "block";
+            analyzeOcrBtn.disabled = true;
+          } else {
+            ocrStatusText.textContent = "Text extracted successfully!";
+            ocrTextResult.value = cleanText;
+            analyzeOcrBtn.disabled = false;
+          }
+        } catch (err) {
+          console.error("Tesseract error:", err);
+          ocrStatusText.textContent = "OCR failed to run.";
+          ocrError.textContent = "OCR error: " + err.message;
+          ocrError.style.display = "block";
+        }
+      }
+
+      function resetImageOcr() {
+        activeOcrImageFile = null;
+        imagePreviewImg.src = "";
+        imagePreviewBox.style.display = "none";
+        imageDropzone.style.display = "flex";
+        ocrTextResult.value = "";
+        analyzeOcrBtn.disabled = true;
+        if (ocrError) ocrError.style.display = "none";
+        if (imageFileInput) imageFileInput.value = "";
+      }
+
+      if (removeImgBtn) removeImgBtn.addEventListener("click", resetImageOcr);
+      if (clearOcrBtn) clearOcrBtn.addEventListener("click", resetImageOcr);
+
+      const ocrForm = document.getElementById("ocr-form");
+      if (ocrForm) {
+        ocrForm.addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const text = ocrTextResult.value.trim();
+          if (!text) {
+            ocrError.textContent = "No text to analyze.";
+            ocrError.style.display = "block";
+            return;
+          }
+
+          analyzeOcrBtn.classList.add("loading");
+          analyzeOcrBtn.disabled = true;
+
+          try {
+            const data = await window.VaderResultRuntime.fetchJsonWithRetry(fetch, "/api/analyze/", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrftoken || "",
+              },
+              body: JSON.stringify({
+                text: text,
+                source_type: "image",
+                source_title: "Extracted Image Text",
+                translate_non_english: getTranslateSetting(),
+              }),
+            });
+            renderSentimentResult(data.result, data.result_html);
+          } catch (err) {
+            ocrError.textContent = err.message;
+            ocrError.style.display = "block";
+          } finally {
+            analyzeOcrBtn.classList.remove("loading");
+            analyzeOcrBtn.disabled = false;
+          }
+        });
+      }
+
+      // DOCUMENT & BATCH CSV
+      const docDropzone = document.getElementById("doc-dropzone");
+      const docFileInput = document.getElementById("doc-file-input");
+      const docFileInfo = document.getElementById("doc-file-info");
+      const docFileName = document.getElementById("doc-file-name");
+      const docFileSize = document.getElementById("doc-file-size");
+      const removeDocBtn = document.getElementById("remove-doc-btn");
+      const csvColumnSelector = document.getElementById("csv-column-selector");
+      const csvColumnSelect = document.getElementById("csv-column-select");
+      const processDocBtn = document.getElementById("process-doc-btn");
+      const clearDocBtn = document.getElementById("clear-doc-btn");
+      const docError = document.getElementById("doc-error");
+
+      let activeDocFile = null;
+
+      if (docDropzone && docFileInput) {
+        docDropzone.addEventListener("click", () => docFileInput.click());
+        docDropzone.addEventListener("keydown", e => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            docFileInput.click();
+          }
+        });
+
+        docDropzone.addEventListener("dragover", e => {
+          e.preventDefault();
+          docDropzone.classList.add("dragover");
+        });
+        docDropzone.addEventListener("dragleave", () => docDropzone.classList.remove("dragover"));
+        docDropzone.addEventListener("drop", e => {
+          e.preventDefault();
+          docDropzone.classList.remove("dragover");
+          if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            handleDocSelected(e.dataTransfer.files[0]);
+          }
+        });
+
+        docFileInput.addEventListener("change", e => {
+          if (e.target.files && e.target.files[0]) {
+            handleDocSelected(e.target.files[0]);
+          }
+        });
+      }
+
+      function handleDocSelected(file) {
+        activeDocFile = file;
+        docError.style.display = "none";
+        docFileName.textContent = file.name;
+        docFileSize.textContent = `${(file.size / 1024).toFixed(1)} KB`;
+        docFileInfo.style.display = "flex";
+        docDropzone.style.display = "none";
+        processDocBtn.disabled = false;
+
+        if (file.name.toLowerCase().endsWith(".csv")) {
+          const reader = new FileReader();
+          reader.onload = e => {
+            const firstLine = e.target.result.split(/\r\n|\n/)[0];
+            const cols = firstLine.split(',').map(c => c.replace(/["']/g, '').trim());
+            csvColumnSelect.innerHTML = '';
+            cols.forEach(col => {
+              const opt = document.createElement("option");
+              opt.value = col;
+              opt.textContent = col;
+              csvColumnSelect.appendChild(opt);
+            });
+            csvColumnSelector.style.display = "block";
+          };
+          reader.readAsText(file.slice(0, 4096));
+        } else {
+          csvColumnSelector.style.display = "none";
+        }
+      }
+
+      function resetDocUpload() {
+        activeDocFile = null;
+        docFileInfo.style.display = "none";
+        docDropzone.style.display = "flex";
+        csvColumnSelector.style.display = "none";
+        processDocBtn.disabled = true;
+        docError.style.display = "none";
+        if (docFileInput) docFileInput.value = "";
+      }
+
+      if (removeDocBtn) removeDocBtn.addEventListener("click", resetDocUpload);
+      if (clearDocBtn) clearDocBtn.addEventListener("click", resetDocUpload);
+
+      if (processDocBtn) {
+        processDocBtn.addEventListener("click", async () => {
+          if (!activeDocFile) return;
+
+          processDocBtn.classList.add("loading");
+          processDocBtn.disabled = true;
+          docError.style.display = "none";
+
+          const formData = new FormData();
+          formData.append("file", activeDocFile);
+          formData.append("translate_non_english", getTranslateSetting() ? "true" : "false");
+          if (activeDocFile.name.toLowerCase().endsWith(".csv") && csvColumnSelect.value) {
+            formData.append("column", csvColumnSelect.value);
+          }
+
+          try {
+            const data = await window.VaderResultRuntime.fetchJsonWithRetry(fetch, "/api/analyze-document/", {
+              method: "POST",
+              headers: {
+                "X-CSRFToken": csrftoken || "",
+              },
+              body: formData,
+            });
+
+            if (data.is_batch && data.batch) {
+              renderBatchResult(data.batch);
+            } else if (data.result) {
+              renderSentimentResult(data.result, data.result_html);
+            }
+          } catch (err) {
+            docError.textContent = err.message;
+            docError.style.display = "block";
+          } finally {
+            processDocBtn.classList.remove("loading");
+            processDocBtn.disabled = false;
+          }
+        });
+      }
+
+      // HISTORY RELOAD HANDLER
+      document.querySelectorAll(".history-item-pro, .history-item").forEach(item => {
+        const reloadText = () => {
+          const text = item.getAttribute("data-text");
+          if (text) {
+            switchTab("text");
+            if (textInput) {
+              textInput.value = text;
+              textInput.focus();
+              updateStats();
+            }
+          }
+        };
+        item.addEventListener("click", reloadText);
+        item.addEventListener("keydown", e => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            reloadText();
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -26,7 +26,7 @@ $RECYCLE.BIN/
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon
 # Thumbnails
 ._*
 
@@ -40,6 +40,10 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# Local virtualenv and Django runtime files
+.venv/
+webapp/db.sqlite3
 
 # Compiled python modules.
 *.pyc

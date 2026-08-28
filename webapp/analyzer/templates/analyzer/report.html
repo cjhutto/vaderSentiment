@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VADER Sentiment Analysis Report — {{ result.label|upper }} ({{ result.compound|floatformat:4 }})</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0f172a;
+      --secondary: #1e3a5f;
+      --accent-blue: #2563eb;
+      --accent-green: #047857;
+      --accent-red: #b91c1c;
+      --accent-slate: #475569;
+      --border-dark: #334155;
+      --border-light: #cbd5e1;
+      --bg-page: #f1f5f9;
+      --bg-card: #ffffff;
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'Fira Code', ui-monospace, monospace;
+      --font-heading: 'Inter', sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg-page);
+      font-family: var(--font-body);
+      color: #1e293b;
+      line-height: 1.45;
+      font-size: 13px;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* ACTION BAR (SCREEN ONLY) */
+    .screen-toolbar {
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .toolbar-title {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .toolbar-badge {
+      background: #2563eb;
+      color: #fff;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 10.5px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+    }
+    .toolbar-actions {
+      display: flex;
+      gap: 10px;
+    }
+    .btn-tb {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      font-size: 12.5px;
+      font-weight: 600;
+      font-family: inherit;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.08);
+      color: #ffffff;
+      transition: all 150ms ease;
+    }
+    .btn-tb:hover { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.4); }
+    .btn-tb-primary {
+      background: #2563eb;
+      border-color: #3b82f6;
+      color: #ffffff;
+    }
+    .btn-tb-primary:hover { background: #1d4ed8; }
+
+    /* DOCUMENT CONTAINER */
+    .document-page {
+      max-width: 860px;
+      margin: 28px auto;
+      background: #ffffff;
+      padding: 44px 50px;
+      border: 1px solid #cbd5e1;
+      box-shadow: 0 10px 35px rgba(15, 23, 42, 0.08);
+      border-radius: 2px;
+    }
+
+    /* INSTITUTIONAL HEADER */
+    .inst-header {
+      border-bottom: 2px solid #0f172a;
+      padding-bottom: 14px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .inst-logo-group h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      color: #0f172a;
+      text-transform: uppercase;
+    }
+    .inst-subtitle {
+      margin: 3px 0 0;
+      font-size: 11px;
+      font-weight: 700;
+      color: #2563eb;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .inst-doc-meta {
+      text-align: right;
+      font-size: 11px;
+      color: #475569;
+      line-height: 1.4;
+    }
+    .mono { font-family: var(--font-mono); }
+
+    /* METADATA SUMMARY TABLE */
+    .meta-summary-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      font-size: 11.5px;
+      border: 1px solid #cbd5e1;
+    }
+    .meta-summary-table th {
+      background: #f8fafc;
+      color: #334155;
+      font-weight: 700;
+      text-align: left;
+      padding: 6px 10px;
+      border: 1px solid #cbd5e1;
+      width: 18%;
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 0.05em;
+    }
+    .meta-summary-table td {
+      padding: 6px 10px;
+      border: 1px solid #cbd5e1;
+      color: #0f172a;
+    }
+
+    /* SECTION HEADERS */
+    .doc-section {
+      margin-bottom: 22px;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    .section-num-title {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #0f172a;
+      border-bottom: 1.5px solid #0f172a;
+      padding-bottom: 4px;
+      margin: 0 0 12px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .section-num-title span.sec-tag {
+      font-size: 9.5px;
+      font-weight: 700;
+      color: #64748b;
+      letter-spacing: 0.04em;
+    }
+
+    /* EXECUTIVE SUMMARY & SCORECARD */
+    .scorecard-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+    .verdict-callout {
+      border: 1.5px solid #cbd5e1;
+      border-radius: 4px;
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .verdict-callout.verdict-pos {
+      border-color: #059669;
+      background: #f0fdf4;
+      border-left-width: 6px;
+    }
+    .verdict-callout.verdict-neg {
+      border-color: #dc2626;
+      background: #fef2f2;
+      border-left-width: 6px;
+    }
+    .verdict-callout.verdict-neu {
+      border-color: #475569;
+      background: #f8fafc;
+      border-left-width: 6px;
+    }
+
+    .v-kicker {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #475569;
+      margin: 0;
+    }
+    .v-heading {
+      margin: 4px 0;
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .verdict-pos .v-heading { color: #065f46; }
+    .verdict-neg .v-heading { color: #991b1b; }
+    .verdict-neu .v-heading { color: #1e293b; }
+
+    .v-score-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 6px;
+      font-size: 12px;
+    }
+    .score-badge {
+      background: #0f172a;
+      color: #ffffff;
+      padding: 3px 8px;
+      border-radius: 3px;
+      font-weight: 700;
+      font-size: 12px;
+    }
+    .mood-indicator-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 9px;
+      border-radius: 4px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      font-weight: 600;
+      font-size: 11.5px;
+    }
+
+    .stats-matrix {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .matrix-box {
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+      padding: 10px;
+      border-radius: 4px;
+      text-align: center;
+    }
+    .matrix-lbl {
+      margin: 0;
+      font-size: 9.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #64748b;
+      letter-spacing: 0.04em;
+    }
+    .matrix-val {
+      margin: 2px 0 0;
+      font-size: 16px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .matrix-sub {
+      margin: 2px 0 0;
+      font-size: 9.5px;
+      color: #64748b;
+    }
+
+    .narrative-box {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-left: 3px solid #0f172a;
+      padding: 10px 14px;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #1e293b;
+      margin-top: 10px;
+    }
+
+    /* SECTION 2: QUANTITATIVE GAUGE & BREAKDOWN TABLE */
+    .quant-grid {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 16px;
+      align-items: center;
+    }
+    .gauge-card {
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      padding: 12px;
+      text-align: center;
+      background: #ffffff;
+    }
+    .speedo-svg {
+      width: 100%;
+      max-width: 210px;
+      display: block;
+      margin: 0 auto;
+    }
+    .speedo-tick {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      fill: #475569;
+      font-weight: 600;
+    }
+
+    .formal-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11.5px;
+      border: 1px solid #cbd5e1;
+    }
+    .formal-table th {
+      background: #0f172a;
+      color: #ffffff;
+      padding: 7px 10px;
+      text-align: left;
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border: 1px solid #0f172a;
+    }
+    .formal-table td {
+      padding: 6px 10px;
+      border: 1px solid #cbd5e1;
+      color: #1e293b;
+    }
+    .formal-table tr:nth-child(even) {
+      background: #f8fafc;
+    }
+    .status-pill {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-weight: 700;
+      font-size: 10px;
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+    }
+    .status-pos { background: #dcfce7; color: #15803d; }
+    .status-neg { background: #fee2e2; color: #b91c1c; }
+    .status-neu { background: #e2e8f0; color: #334155; }
+
+    /* SECTION 3: EMOJI & AFFECTIVE SPECTRUM */
+    .spectrum-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11.5px;
+      margin-bottom: 12px;
+      border: 1px solid #cbd5e1;
+    }
+    .spectrum-table th {
+      background: #f1f5f9;
+      color: #334155;
+      padding: 6px 10px;
+      font-size: 10px;
+      text-transform: uppercase;
+      font-weight: 700;
+      border: 1px solid #cbd5e1;
+    }
+    .spectrum-table td {
+      padding: 6px 10px;
+      border: 1px solid #cbd5e1;
+    }
+    .tier-row.tier-active {
+      background: #eff6ff !important;
+      font-weight: 700;
+    }
+    .active-tier-tag {
+      background: #2563eb;
+      color: #ffffff;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .detected-emojis-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11.5px;
+      border: 1px solid #cbd5e1;
+    }
+    .detected-emojis-table th {
+      background: #f8fafc;
+      color: #334155;
+      padding: 6px 10px;
+      font-size: 10px;
+      text-transform: uppercase;
+      font-weight: 700;
+      border: 1px solid #cbd5e1;
+    }
+    .detected-emojis-table td {
+      padding: 6px 10px;
+      border: 1px solid #cbd5e1;
+    }
+
+    /* SECTION 4: LEXICON INFLUENCERS */
+    .influencer-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .influencer-card {
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      padding: 10px;
+      background: #ffffff;
+    }
+    .inf-title {
+      margin: 0 0 6px 0;
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .inf-pos-title { color: #047857; }
+    .inf-neg-title { color: #b91c1c; }
+
+    .inf-chips-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .inf-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px;
+      border-radius: 3px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .inf-chip-pos { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+    .inf-chip-neg { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+
+    /* SECTION 5: SENTENCE TRAJECTORY */
+    .flow-chart-formal {
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    .flow-bars-container {
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      height: 48px;
+      padding: 0 4px;
+    }
+    .flow-bar-item {
+      flex: 1;
+      min-width: 8px;
+      border-radius: 2px 2px 0 0;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+    .bar-pos { background: #10b981; }
+    .bar-neg { background: #ef4444; }
+    .bar-neu { background: #94a3b8; }
+
+    .sentences-ledger-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      border: 1px solid #cbd5e1;
+    }
+    .sentences-ledger-table th {
+      background: #f1f5f9;
+      color: #334155;
+      padding: 6px 8px;
+      font-size: 9.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      border: 1px solid #cbd5e1;
+    }
+    .sentences-ledger-table td {
+      padding: 5px 8px;
+      border: 1px solid #cbd5e1;
+      vertical-align: top;
+    }
+
+    /* SECTION 6: TRANSCRIPT & CITATIONS */
+    .transcript-box {
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      padding: 12px 14px;
+      border-radius: 4px;
+      font-size: 11.5px;
+      color: #334155;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    .cert-footer {
+      border-top: 1.5px solid #0f172a;
+      margin-top: 24px;
+      padding-top: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      font-size: 10px;
+      color: #64748b;
+      line-height: 1.4;
+    }
+    .cert-seal {
+      text-align: right;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: #0f172a;
+    }
+
+    /* PRINT SPECIFIC RULES */
+    @page {
+      size: letter portrait;
+      margin: 12mm 14mm 12mm 14mm;
+    }
+
+    @media print {
+      body {
+        background: #ffffff !important;
+        font-size: 11.5px !important;
+      }
+      .screen-toolbar {
+        display: none !important;
+      }
+      .document-page {
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        box-shadow: none !important;
+      }
+      .doc-section {
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+      .transcript-box {
+        max-height: none !important;
+        overflow: visible !important;
+      }
+      .formal-table th, .spectrum-table th, .detected-emojis-table th, .meta-summary-table th {
+        background: #0f172a !important;
+        color: #ffffff !important;
+      }
+      .meta-summary-table th, .spectrum-table th, .detected-emojis-table th {
+        background: #f1f5f9 !important;
+        color: #0f172a !important;
+      }
+      .tier-row.tier-active {
+        background: #e0f2fe !important;
+      }
+      .verdict-callout.verdict-pos {
+        background: #f0fdf4 !important;
+      }
+      .verdict-callout.verdict-neg {
+        background: #fef2f2 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SCREEN ONLY INTERACTION BAR -->
+  <div class="screen-toolbar">
+    <div class="toolbar-title">
+      <span>VADER NLP Assessment</span>
+      <span class="toolbar-badge">Executive Audit</span>
+    </div>
+    <div class="toolbar-actions">
+      <button type="button" class="btn-tb btn-tb-primary" onclick="window.print()">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+        Print / Save as PDF
+      </button>
+      <button type="button" class="btn-tb" onclick="downloadFormalHtml()">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        Download Formal HTML
+      </button>
+      <button type="button" class="btn-tb" onclick="window.close()">Close View</button>
+    </div>
+  </div>
+
+  <div class="document-page">
+
+    <!-- INSTITUTIONAL LETTERHEAD -->
+    <header class="inst-header">
+      <div class="inst-logo-group">
+        <p class="inst-subtitle">VADER Sentiment Analysis Report • Natural Language Processing Audit</p>
+        <h1>Sentiment &amp; Affective Intelligence Assessment</h1>
+      </div>
+      <div class="inst-doc-meta">
+        <div><strong>DOC REF:</strong> <span class="mono">VAD-AUDIT-{% now "Ymd-His" %}</span></div>
+        <div><strong>DATE:</strong> <span class="mono">{% now "F d, Y — H:i T" %}</span></div>
+        <div><strong>CLASSIFICATION:</strong> <span style="font-weight: 700; color: #0f172a;">FORMAL ASSESSMENT</span></div>
+      </div>
+    </header>
+
+    <!-- METADATA RECORD TABLE -->
+    <table class="meta-summary-table">
+      <tbody>
+        <tr>
+          <th>Evaluation Target</th>
+          <td colspan="3"><strong>{{ result.source_title|default:"Verbatim Text Corpus & Context Analysis" }}</strong></td>
+        </tr>
+        <tr>
+          <th>Source Medium</th>
+          <td>{{ result.source_type|upper }}</td>
+          <th>Volume Metrics</th>
+          <td class="mono"><strong>{{ result.word_count }}</strong> words | <strong>{{ result.char_count }}</strong> characters | <strong>{{ result.sentence_count }}</strong> sentences</td>
+        </tr>
+        <tr>
+          <th>NLP Engine Standard</th>
+          <td>VADER Multi-Modal Engine (Hutto &amp; Gilbert, 2014)</td>
+          <th>Valence Scale</th>
+          <td class="mono">−1.0000 (Maximum Negative) to +1.0000 (Maximum Positive)</td>
+        </tr>
+        {% if result.translation.used %}
+          <tr>
+            <th>Language &amp; Translation</th>
+            <td colspan="3">
+              <span class="mono" style="color: #0f766e; font-weight: 600;">Translated from {{ result.language.name }}</span> (via MyMemory Translation)
+              {% if result.translation.truncated %}<span style="font-size: 10px; color: #92400e; margin-left: 8px;">[First 1500 chars translated]</span>{% endif %}
+            </td>
+          </tr>
+        {% elif result.translation.warning %}
+          <tr>
+            <th>Language Notice</th>
+            <td colspan="3" style="color: #92400e; font-size: 11px;">
+              {{ result.translation.warning }}
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+
+    <!-- SECTION 1: EXECUTIVE SUMMARY & VERDICT -->
+    <section class="doc-section">
+      <h2 class="section-num-title">
+        <span>1. Executive Summary &amp; Overall Polarity Appraisal</span>
+        <span class="sec-tag">SECTION 1.0</span>
+      </h2>
+
+      <div class="scorecard-grid">
+        <div class="verdict-callout verdict-{{ result.label|slice:':3' }}">
+          <div>
+            <p class="v-kicker">Overall Sentiment Appraisal</p>
+            <h3 class="v-heading">{{ result.label|upper }} VALENCE</h3>
+          </div>
+          <div>
+            <div class="v-score-row">
+              <span class="score-badge mono">Compound: {{ result.compound|floatformat:4 }}</span>
+              <span class="mood-indicator-pill">
+                <span style="font-size: 15px;">{{ result.mood.emoji }}</span>
+                <span>{{ result.mood.mood_name }}</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="stats-matrix">
+          <div class="matrix-box">
+            <p class="matrix-lbl">Positive Ratio</p>
+            <p class="matrix-val mono" style="color: var(--accent-green);">{{ result.pos_pct }}%</p>
+            <p class="matrix-sub mono">{{ result.pos|floatformat:3 }} score</p>
+          </div>
+          <div class="matrix-box">
+            <p class="matrix-lbl">Negative Ratio</p>
+            <p class="matrix-val mono" style="color: var(--accent-red);">{{ result.neg_pct }}%</p>
+            <p class="matrix-sub mono">{{ result.neg|floatformat:3 }} score</p>
+          </div>
+          <div class="matrix-box">
+            <p class="matrix-lbl">Neutral Component</p>
+            <p class="matrix-val mono" style="color: var(--accent-slate);">{{ result.neu_pct }}%</p>
+            <p class="matrix-sub mono">{{ result.neu|floatformat:3 }} score</p>
+          </div>
+          <div class="matrix-box">
+            <p class="matrix-lbl">Gauge Angle</p>
+            <p class="matrix-val mono" style="color: var(--accent-blue);">{{ result.needle_angle }}°</p>
+            <p class="matrix-sub mono">{{ result.compound_pct }}% position</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="narrative-box">
+        <strong>Analytical Synthesis:</strong> {{ result.plain_summary }}
+      </div>
+    </section>
+
+    <!-- SECTION 2: QUANTITATIVE GAUGE & DISTRIBUTION -->
+    <section class="doc-section">
+      <h2 class="section-num-title">
+        <span>2. Quantitative Sentiment Measurement &amp; Radial Gauge Dimension Breakdown</span>
+        <span class="sec-tag">SECTION 2.0</span>
+      </h2>
+
+      <div class="quant-grid">
+        <!-- SVG Radial Gauge -->
+        <div class="gauge-card">
+          <svg viewBox="0 0 300 160" class="speedo-svg" role="img" aria-label="Sentiment Speedometer">
+            <path d="M 30 140 A 120 120 0 0 1 115 25" fill="none" stroke="#ef4444" stroke-width="22" stroke-linecap="round" opacity="0.95"/>
+            <path d="M 120 24 A 120 120 0 0 1 180 24" fill="none" stroke="#94a3b8" stroke-width="22" stroke-linecap="round" opacity="0.95"/>
+            <path d="M 185 25 A 120 120 0 0 1 270 140" fill="none" stroke="#10b981" stroke-width="22" stroke-linecap="round" opacity="0.95"/>
+            
+            <text x="22" y="155" class="speedo-tick">−1.0</text>
+            <text x="75" y="55" class="speedo-tick">−0.5</text>
+            <text x="150" y="18" class="speedo-tick" style="text-anchor: middle;">0.0</text>
+            <text x="225" y="55" class="speedo-tick">+0.5</text>
+            <text x="278" y="155" class="speedo-tick">+1.0</text>
+
+            <g style="transform-origin: 150px 140px; transform: rotate({{ result.needle_angle }}deg);">
+              <polygon points="146,140 154,140 151,26 149,26" fill="#0f172a" />
+              <circle cx="150" cy="140" r="11" fill="#0f172a" />
+              <circle cx="150" cy="140" r="5" fill="#ffffff" />
+            </g>
+          </svg>
+          <div style="margin-top: 6px; font-size: 11px; font-weight: 700; color: #0f172a;">
+            RADIAL MEASURE: <span class="mono">{{ result.compound|floatformat:4 }}</span>
+          </div>
+        </div>
+
+        <!-- Quantitative Distribution Table -->
+        <table class="formal-table">
+          <thead>
+            <tr>
+              <th>Dimension Component</th>
+              <th>Raw Metric</th>
+              <th>Distribution Share</th>
+              <th>Benchmark Classification</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Positive Sentiment (pos)</strong></td>
+              <td class="mono">{{ result.pos|floatformat:4 }}</td>
+              <td class="mono"><strong>{{ result.pos_pct }}%</strong></td>
+              <td><span class="status-pill status-pos">Favorable</span> (Valence &gt; 0)</td>
+            </tr>
+            <tr>
+              <td><strong>Neutral Sentiment (neu)</strong></td>
+              <td class="mono">{{ result.neu|floatformat:4 }}</td>
+              <td class="mono"><strong>{{ result.neu_pct }}%</strong></td>
+              <td><span class="status-pill status-neu">Objective</span> (Factual Content)</td>
+            </tr>
+            <tr>
+              <td><strong>Negative Sentiment (neg)</strong></td>
+              <td class="mono">{{ result.neg|floatformat:4 }}</td>
+              <td class="mono"><strong>{{ result.neg_pct }}%</strong></td>
+              <td><span class="status-pill status-neg">Critical</span> (Valence &lt; 0)</td>
+            </tr>
+            <tr style="background: #f1f5f9; font-weight: 700;">
+              <td><strong>Normalized Compound Metric</strong></td>
+              <td class="mono">{{ result.compound|floatformat:4 }}</td>
+              <td class="mono">{{ result.compound_pct }}% Scale</td>
+              <td><span class="status-pill status-{{ result.label|slice:':3' }}">{{ result.label|upper }}</span> (Overall Tone)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SECTION 3: AFFECTIVE SPECTRUM & DETECTED EMOJIS -->
+    <section class="doc-section">
+      <h2 class="section-num-title">
+        <span>3. Emoji Sentiment Graph &amp; Affective Spectrum Inventory</span>
+        <span class="sec-tag">SECTION 3.0</span>
+      </h2>
+
+      <table class="spectrum-table">
+        <thead>
+          <tr>
+            <th style="width: 50px;">Tier</th>
+            <th style="width: 40px; text-align: center;">Icon</th>
+            <th>Emotional State</th>
+            <th>Compound Range</th>
+            <th>Characterization</th>
+            <th style="width: 90px; text-align: center;">Audit Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="tier-row {% if result.mood.tier == 5 %}tier-active{% endif %}">
+            <td class="mono">Tier 5</td>
+            <td style="text-align: center; font-size: 15px;">🤩</td>
+            <td><strong>Delighted / Enthusiastic</strong></td>
+            <td class="mono">+0.600 to +1.000</td>
+            <td>High praise, joyful affirmation, extreme optimism</td>
+            <td style="text-align: center;">{% if result.mood.tier == 5 %}<span class="active-tier-tag">Active</span>{% else %}<span style="color:#94a3b8;">—</span>{% endif %}</td>
+          </tr>
+          <tr class="tier-row {% if result.mood.tier == 4 %}tier-active{% endif %}">
+            <td class="mono">Tier 4</td>
+            <td style="text-align: center; font-size: 15px;">😊</td>
+            <td><strong>Pleased / Encouraged</strong></td>
+            <td class="mono">+0.050 to +0.599</td>
+            <td>Positive sentiment, satisfaction, constructive goodwill</td>
+            <td style="text-align: center;">{% if result.mood.tier == 4 %}<span class="active-tier-tag">Active</span>{% else %}<span style="color:#94a3b8;">—</span>{% endif %}</td>
+          </tr>
+          <tr class="tier-row {% if result.mood.tier == 3 %}tier-active{% endif %}">
+            <td class="mono">Tier 3</td>
+            <td style="text-align: center; font-size: 15px;">😐</td>
+            <td><strong>Neutral / Factual</strong></td>
+            <td class="mono">−0.049 to +0.049</td>
+            <td>Objective reporting, informational text, balanced balance</td>
+            <td style="text-align: center;">{% if result.mood.tier == 3 %}<span class="active-tier-tag">Active</span>{% else %}<span style="color:#94a3b8;">—</span>{% endif %}</td>
+          </tr>
+          <tr class="tier-row {% if result.mood.tier == 2 %}tier-active{% endif %}">
+            <td class="mono">Tier 2</td>
+            <td style="text-align: center; font-size: 15px;">🙁</td>
+            <td><strong>Critical / Skeptical</strong></td>
+            <td class="mono">−0.599 to −0.050</td>
+            <td>Mild dissatisfaction, skepticism, constructive critique</td>
+            <td style="text-align: center;">{% if result.mood.tier == 2 %}<span class="active-tier-tag">Active</span>{% else %}<span style="color:#94a3b8;">—</span>{% endif %}</td>
+          </tr>
+          <tr class="tier-row {% if result.mood.tier == 1 %}tier-active{% endif %}">
+            <td class="mono">Tier 1</td>
+            <td style="text-align: center; font-size: 15px;">😡</td>
+            <td><strong>Distressed / Angry</strong></td>
+            <td class="mono">−1.000 to −0.600</td>
+            <td>Severe grievance, intense disapproval, hostile tone</td>
+            <td style="text-align: center;">{% if result.mood.tier == 1 %}<span class="active-tier-tag">Active</span>{% else %}<span style="color:#94a3b8;">—</span>{% endif %}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      {% if result.detected_emojis %}
+        <div style="margin-top: 10px;">
+          <h4 style="margin: 0 0 6px; font-size: 11px; text-transform: uppercase; color: #334155;">Detected Emojis Inventory &amp; Lexicon Attribution:</h4>
+          <table class="detected-emojis-table">
+            <thead>
+              <tr>
+                <th style="width: 35px; text-align: center;">Glyph</th>
+                <th>Unicode Semantic Descriptor</th>
+                <th style="width: 60px; text-align: center;">Count</th>
+                <th style="width: 80px; text-align: center;">VADER Valence</th>
+                <th style="width: 90px; text-align: center;">Contribution</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for em in result.detected_emojis %}
+                <tr>
+                  <td style="text-align: center; font-size: 16px;">{{ em.emoji }}</td>
+                  <td><strong>{{ em.desc|title }}</strong></td>
+                  <td style="text-align: center;" class="mono">×{{ em.count }}</td>
+                  <td style="text-align: center;" class="mono"><strong>{{ em.compound|floatformat:2 }}</strong></td>
+                  <td style="text-align: center;"><span class="status-pill status-{{ em.label|slice:':3' }}">{{ em.label|upper }}</span></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% endif %}
+    </section>
+
+    <!-- SECTION 4: LEXICON INFLUENCER ATTRIBUTION -->
+    {% if result.highlights %}
+      <section class="doc-section">
+        <h2 class="section-num-title">
+          <span>4. Lexical Valence Influencers &amp; Keyword Attribution</span>
+          <span class="sec-tag">SECTION 4.0</span>
+        </h2>
+        <div class="influencer-grid">
+          <div class="influencer-card">
+            <p class="inf-title inf-pos-title">Positive Valence Drivers (+)</p>
+            <div class="inf-chips-row">
+              {% for h in result.highlights %}
+                {% if h.type == 'positive' %}
+                  <span class="inf-chip inf-chip-pos">{{ h.word }} <span class="mono">(+{{ h.score }})</span></span>
+                {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+          <div class="influencer-card">
+            <p class="inf-title inf-neg-title">Negative Valence Drivers (−)</p>
+            <div class="inf-chips-row">
+              {% for h in result.highlights %}
+                {% if h.type == 'negative' %}
+                  <span class="inf-chip inf-chip-neg">{{ h.word }} <span class="mono">({{ h.score }})</span></span>
+                {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </section>
+    {% endif %}
+
+    <!-- SECTION 5: SENTENCE VALENCE LEDGER -->
+    {% if result.sentences %}
+      <section class="doc-section">
+        <h2 class="section-num-title">
+          <span>5. Chronological Sentence Trajectory &amp; Audit Ledger</span>
+          <span class="sec-tag">SECTION 5.0 ({{ result.sentences|length }} SENTENCES)</span>
+        </h2>
+
+        <div class="flow-chart-formal">
+          <div class="flow-bars-container">
+            {% for s in result.sentences %}
+              {% if s.compound >= 0.05 %}
+                <div class="flow-bar-item bar-pos" style="height: {{ s.flow_height_pct }}%;" title="#{{ s.index }}: {{ s.compound }}"></div>
+              {% elif s.compound <= -0.05 %}
+                <div class="flow-bar-item bar-neg" style="height: {{ s.flow_height_pct }}%;" title="#{{ s.index }}: {{ s.compound }}"></div>
+              {% else %}
+                <div class="flow-bar-item bar-neu" style="height: 14%;" title="#{{ s.index }}: 0.00"></div>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+
+        <table class="sentences-ledger-table">
+          <thead>
+            <tr>
+              <th style="width: 30px; text-align: center;">#</th>
+              <th style="width: 70px; text-align: center;">Polarity</th>
+              <th style="width: 65px; text-align: center;">Compound</th>
+              <th>Sentence Excerpt</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in result.sentences %}
+              <tr>
+                <td style="text-align: center;" class="mono">#{{ s.index }}</td>
+                <td style="text-align: center;"><span class="status-pill status-{{ s.label|slice:':3' }}">{{ s.label|upper }}</span></td>
+                <td style="text-align: center;" class="mono"><strong>{{ s.compound|floatformat:2 }}</strong></td>
+                <td>{{ s.sentence }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+    {% endif %}
+
+    <!-- SECTION 6: VERBATIM CORPUS -->
+    <section class="doc-section">
+      <h2 class="section-num-title">
+        <span>6. Complete Analyzed Content Transcript</span>
+        <span class="sec-tag">SECTION 6.0</span>
+      </h2>
+      {% if result.translation.used %}
+        <div style="margin-bottom: 10px;">
+          <strong style="font-size: 11px; color: #0f766e; text-transform: uppercase; letter-spacing: 0.05em;">Scored English Translation:</strong>
+          <div class="transcript-box" style="margin-top: 4px; border-left: 3px solid #0d9488; background: #f0fdfa;">{{ result.scored_text }}</div>
+        </div>
+        <strong style="font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 0.05em;">Original Verbatim Source ({{ result.language.name }}):</strong>
+      {% endif %}
+      <div class="transcript-box">{{ result.text }}</div>
+      {% if result.source_url %}
+        <p style="margin: 6px 0 0; font-size: 10.5px; color: #64748b;">
+          <strong>Origin Reference:</strong> <span class="mono">{{ result.source_url }}</span>
+        </p>
+      {% endif %}
+    </section>
+
+    <!-- FORMAL CERTIFICATION & SIGNATURE BLOCK -->
+    <footer class="cert-footer">
+      <div>
+        <p style="margin: 0; font-weight: 700; color: #0f172a;">METHODOLOGY &amp; CITATION</p>
+        <p style="margin: 2px 0 0;">
+          Rule-based sentiment analysis conducted via VADER (Valence Aware Dictionary and sEntiment Reasoner; Hutto &amp; Gilbert, 2014), augmented with Unicode Emoji Lexicon v15.0 heuristics and multi-modal DOM/OCR extraction pipelines.
+        </p>
+        <p style="margin: 10px 0 0; font-size: 11px; color: #0f766e; font-weight: 600;">Run &amp; Web UI dev by SysDev Gumz</p>
+      </div>
+      <div class="cert-seal">
+        <div>[CERTIFIED AUDIT]</div>
+        <div style="font-size: 9px; color: #64748b; margin-top: 2px;">VADER NLP ENGINE v3.3</div>
+      </div>
+    </footer>
+
+  </div>
+
+  <script>
+    function downloadFormalHtml() {
+      const htmlContent = document.documentElement.outerHTML;
+      const blob = new Blob([htmlContent], { type: "text/html" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `VADER_Sentiment_Audit_Report_${Date.now()}.html`;
+      a.click();
+    }
+  </script>
+</body>
+</html>

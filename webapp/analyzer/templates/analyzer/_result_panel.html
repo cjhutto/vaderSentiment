@@ -1,0 +1,276 @@
+<!-- TOP VERDICT & ACTIONS BAR -->
+<div class="results-topbar-pro">
+  <div class="results-source-meta">
+    <span class="panel-kicker">Sentiment Analysis Result</span>
+    {% if result.source_type %}
+      <span class="badge badge-{{ result.source_type }}" id="result-source-badge">
+        {% if result.source_type == 'url' %}Source: Web / URL
+        {% elif result.source_type == 'image' %}Source: Image OCR
+        {% elif result.source_type == 'document' %}Source: Document
+        {% else %}Direct Text{% endif %}
+      </span>
+    {% endif %}
+  </div>
+
+  <div class="report-actions-container">
+    <button type="button" class="btn-report-pro" id="btn-report-toggle" aria-expanded="false" aria-haspopup="true">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+      <span>Download Report</span>
+      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
+    <div class="report-dropdown-menu-pro" id="report-dropdown-menu" style="display: none;">
+      <button type="button" class="dropdown-item-pro" id="btn-export-pdf">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+        <div><strong>Print / Save as PDF</strong><span>Interactive printable document</span></div>
+      </button>
+      <button type="button" class="dropdown-item-pro" id="btn-export-html">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <div><strong>Standalone HTML Report</strong><span>Self-contained offline report</span></div>
+      </button>
+      <button type="button" class="dropdown-item-pro" id="btn-export-json">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 17l6-6-6-6M12 19h8"/></svg>
+        <div><strong>Raw JSON Data Export</strong><span>Complete sentiment data payload</span></div>
+      </button>
+    </div>
+  </div>
+</div>
+
+{% if result.source_title %}
+  <div class="source-title-card-pro">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"/></svg>
+    <h4 class="source-title-display">{{ result.source_title }}</h4>
+  </div>
+{% endif %}
+
+<!-- TRANSLATION NOTICE / WARNING BANNER -->
+<div id="translation-banner" class="panel studio-panel translation-banner" style="display: {% if result.translation.used or result.translation.warning %}flex{% else %}none{% endif %};" role="status">
+  {% if result.translation.used %}
+    <div class="trans-banner-content trans-banner-success">
+      <div class="trans-banner-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      </div>
+      <div class="trans-banner-body">
+        <div class="trans-banner-title">
+          <strong>Translated from {{ result.language.name }}</strong>
+          <span class="trans-provider-badge">via MyMemory Translation</span>
+          {% if result.translation.truncated %}<span class="trans-trunc-badge">First 1500 chars translated</span>{% endif %}
+        </div>
+        <p class="trans-scored-preview">
+          <span class="trans-label">Scored translation:</span>
+          <span class="trans-text mono">“{{ result.scored_text }}”</span>
+        </p>
+        <p class="trans-disclaimer">VADER lexicon scored the English translation above. Original emojis and verbatim text are preserved.</p>
+      </div>
+    </div>
+  {% elif result.translation.warning %}
+    <div class="trans-banner-content trans-banner-warning">
+      <div class="trans-banner-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <div class="trans-banner-body">
+        <div class="trans-banner-title"><strong>Non-English Notice ({{ result.language.name }})</strong></div>
+        <p class="trans-warning-text">{{ result.translation.warning }}</p>
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+<!-- VERDICT HERO BANNER -->
+<div class="panel studio-panel verdict-banner-pro verdict-{{ result.label }}" id="verdict-box">
+  <div class="verdict-left-col">
+    <div class="verdict-icon-bubble">
+      <span class="verdict-icon" aria-hidden="true">
+        {% if result.label == "positive" %}
+          <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>
+        {% elif result.label == "negative" %}
+          <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        {% else %}
+          <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14"/></svg>
+        {% endif %}
+      </span>
+    </div>
+    <div class="verdict-text-info">
+      <span class="verdict-kicker-text">Sentiment Classification</span>
+      <h2 class="verdict-title-text" id="verdict-label-text">{{ result.label|title }}</h2>
+      <div class="mood-pill-pro" id="verdict-mood-pill">
+        <span class="mood-emoji">{{ result.mood.emoji }}</span>
+        <span class="mood-name">{{ result.mood.mood_name }}</span>
+      </div>
+    </div>
+  </div>
+  <div class="verdict-right-col">
+    <div class="compound-score-display">
+      <span class="compound-score-label">Compound Score</span>
+      <div class="compound-numeric-row">
+        <strong class="compound-score-val mono" id="verdict-compound-text">{{ result.compound|floatformat:4 }}</strong>
+        <span class="compound-score-unit">/ 1.0</span>
+      </div>
+      <span class="compound-range-hint">(Range: −1.000 to +1.000)</span>
+    </div>
+  </div>
+</div>
+
+<!-- SUMMARY INSIGHT -->
+<div class="panel studio-panel insight-panel-pro" id="insights-box">
+  <div class="insight-header-pro">
+    <div class="insight-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+    </div>
+    <strong>Analysis Summary:</strong>
+  </div>
+  <p id="plain-summary-text" class="insight-content-text">{{ result.plain_summary }}</p>
+</div>
+
+<!-- DUAL VISUAL GRID -->
+<div class="telemetry-dual-grid">
+  <div class="panel studio-panel visual-card-pro">
+    <div class="visual-header-pro">
+      <div class="visual-title-group">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <h4 class="visual-heading">Sentiment Gauge</h4>
+      </div>
+      <span class="mono score-badge-pill" id="gauge-score-badge">{{ result.compound|floatformat:4 }}</span>
+    </div>
+    <div class="speedometer-container-pro">
+      <svg viewBox="0 0 300 165" class="speedometer-svg-pro" role="img" aria-label="Sentiment Speedometer Meter">
+        <path d="M 30 145 A 120 120 0 0 1 115 28" fill="none" stroke="#ef4444" stroke-width="22" stroke-linecap="round" opacity="0.92" />
+        <path d="M 120 27 A 120 120 0 0 1 180 27" fill="none" stroke="#94a3b8" stroke-width="22" stroke-linecap="round" opacity="0.92" />
+        <path d="M 185 28 A 120 120 0 0 1 270 145" fill="none" stroke="#10b981" stroke-width="22" stroke-linecap="round" opacity="0.92" />
+        <text x="25" y="160" class="speedo-tick-text">−1.0</text>
+        <text x="78" y="55" class="speedo-tick-text">−0.5</text>
+        <text x="150" y="20" class="speedo-tick-text speedo-tick-center">0.0</text>
+        <text x="222" y="55" class="speedo-tick-text">+0.5</text>
+        <text x="275" y="160" class="speedo-tick-text">+1.0</text>
+        <g id="speedo-needle" style="transform-origin: 150px 145px; transform: rotate({{ result.needle_angle }}deg); transition: transform 650ms cubic-bezier(0.34, 1.56, 0.64, 1);">
+          <polygon points="146,145 154,145 151,30 149,30" fill="#0f766e" />
+          <circle cx="150" cy="145" r="10" fill="#0f766e" />
+          <circle cx="150" cy="145" r="4.5" fill="#ffffff" />
+        </g>
+      </svg>
+    </div>
+    <div class="linear-gauge-pro" role="img" aria-label="Compound score bar">
+      <div class="linear-gauge-track">
+        <div class="linear-gauge-fill" id="gauge-fill" style="width: {{ result.compound_pct }}%"></div>
+        <span class="linear-gauge-pin" id="gauge-marker" style="left: {{ result.compound_pct }}%"></span>
+      </div>
+      <div class="linear-gauge-labels"><span>−1.0 (Extreme Neg)</span><span>0.0 (Neutral)</span><span>+1.0 (Extreme Pos)</span></div>
+    </div>
+  </div>
+
+  <div class="panel studio-panel visual-card-pro">
+    <div class="visual-header-pro">
+      <div class="visual-title-group">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg>
+        <h4 class="visual-heading">Emotion Spectrum</h4>
+      </div>
+      <span class="badge badge-sub" id="active-mood-name">{{ result.mood.label }}</span>
+    </div>
+    <div class="emoji-scale-matrix" id="emoji-scale-grid">
+      <div class="emoji-tier-pill emoji-tier-card {% if result.mood.tier == 1 %}active active-tier-1{% endif %}" data-tier="1"><span class="tier-emoji">😡</span><span class="tier-name">Angry / Distressed</span><span class="tier-score mono">−1.0 to −0.6</span></div>
+      <div class="emoji-tier-pill emoji-tier-card {% if result.mood.tier == 2 %}active active-tier-2{% endif %}" data-tier="2"><span class="tier-emoji">🙁</span><span class="tier-name">Critical / Skeptical</span><span class="tier-score mono">−0.6 to −0.05</span></div>
+      <div class="emoji-tier-pill emoji-tier-card {% if result.mood.tier == 3 %}active active-tier-3{% endif %}" data-tier="3"><span class="tier-emoji">😐</span><span class="tier-name">Neutral / Factual</span><span class="tier-score mono">−0.05 to +0.05</span></div>
+      <div class="emoji-tier-pill emoji-tier-card {% if result.mood.tier == 4 %}active active-tier-4{% endif %}" data-tier="4"><span class="tier-emoji">😊</span><span class="tier-name">Positive / Pleased</span><span class="tier-score mono">+0.05 to +0.6</span></div>
+      <div class="emoji-tier-pill emoji-tier-card {% if result.mood.tier == 5 %}active active-tier-5{% endif %}" data-tier="5"><span class="tier-emoji">🤩</span><span class="tier-name">Delighted / Excited</span><span class="tier-score mono">+0.6 to +1.0</span></div>
+    </div>
+    <div class="detected-emojis-box" id="detected-emojis-container" style="display: {% if result.detected_emojis %}block{% else %}none{% endif %};">
+      <span class="sub-label-pro">Detected Emojis:</span>
+      <div class="emoji-chips-row" id="emoji-chips-row">
+        {% for em in result.detected_emojis %}
+          <div class="emoji-pill pill-{{ em.label }}">
+            <span class="pill-em-symbol">{{ em.emoji }}</span><span class="pill-em-desc">{{ em.desc }}</span><span class="pill-em-count badge">×{{ em.count }}</span><span class="pill-em-score mono">{{ em.compound|floatformat:2 }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- POLARITY RATIO BARS -->
+<div class="panel studio-panel visual-card-pro">
+  <div class="visual-header-pro"><h4 class="visual-heading">Sentiment Ratio Distribution</h4></div>
+  <ul class="polarity-bars-list score-bars">
+    <li class="polarity-row">
+      <div class="polarity-meta-row score-meta"><span class="polarity-type">Positive Ratio</span><strong class="mono polarity-val" id="val-pos">{{ result.pos|floatformat:3 }} ({{ result.pos_pct }}%)</strong></div>
+      <div class="polarity-track bar"><div class="polarity-fill bar-fill-pos bar-pos" id="bar-pos" style="width: {{ result.pos_pct }}%"></div></div>
+    </li>
+    <li class="polarity-row">
+      <div class="polarity-meta-row score-meta"><span class="polarity-type">Neutral Ratio</span><strong class="mono polarity-val" id="val-neu">{{ result.neu|floatformat:3 }} ({{ result.neu_pct }}%)</strong></div>
+      <div class="polarity-track bar"><div class="polarity-fill bar-fill-neu bar-neu" id="bar-neu" style="width: {{ result.neu_pct }}%"></div></div>
+    </li>
+    <li class="polarity-row">
+      <div class="polarity-meta-row score-meta"><span class="polarity-type">Negative Ratio</span><strong class="mono polarity-val" id="val-neg">{{ result.neg|floatformat:3 }} ({{ result.neg_pct }}%)</strong></div>
+      <div class="polarity-track bar"><div class="polarity-fill bar-fill-neg bar-neg" id="bar-neg" style="width: {{ result.neg_pct }}%"></div></div>
+    </li>
+  </ul>
+</div>
+
+{% if result.sentences %}
+  <div class="panel studio-panel visual-card-pro sentences-section">
+    <div class="visual-header-pro">
+      <div class="visual-title-group">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <h4 class="visual-heading">Sentence Breakdown ({{ result.sentences|length }} sentences)</h4>
+      </div>
+    </div>
+    <div class="sentence-flow-chart" id="sentence-flow-chart">
+      {% for s in result.sentences %}
+        <div class="flow-col" title="Sentence #{{ s.index }}: {{ s.compound|floatformat:2 }} ({{ s.sentence }})">
+          <div class="flow-bar-wrapper">
+            {% if s.compound >= 0.05 %}<div class="flow-bar flow-bar-pos" style="height: {{ s.flow_height_pct }}%;"></div>
+            {% elif s.compound <= -0.05 %}<div class="flow-bar flow-bar-neg" style="height: {{ s.flow_height_pct }}%;"></div>
+            {% else %}<div class="flow-bar flow-bar-neu" style="height: 22%;"></div>{% endif %}
+          </div>
+          <span class="flow-label mono">#{{ s.index }}</span>
+        </div>
+      {% endfor %}
+    </div>
+    <div class="sentence-list-pro sentence-list">
+      {% for s in result.sentences %}
+        <div class="sentence-item-pro sentence-item sentence-{{ s.label }}">
+          <div class="sentence-score-tag mono pill pill-{{ s.label }}">{{ s.compound|floatformat:2 }}</div>
+          <p class="sentence-text-pro sentence-text"><strong>#{{ s.index }}</strong> {{ s.sentence }}</p>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}
+
+{% if result.highlights %}
+  <div class="panel studio-panel visual-card-pro highlights-section">
+    <div class="visual-header-pro">
+      <div class="visual-title-group">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <h4 class="visual-heading">Key Influencer Words</h4>
+      </div>
+    </div>
+    <div class="highlight-chips-cloud highlight-chips">
+      {% for item in result.highlights %}
+        <span class="hl-chip-pro hl-chip hl-{{ item.type }}" title="Valence weight: {{ item.score }}"><span class="hl-word">{{ item.word }}</span><span class="hl-score-val hl-score mono">{{ item.score }}</span></span>
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}
+
+<!-- ANALYZED SOURCE & METADATA CARD -->
+<div class="panel studio-panel analyzed-source-panel analyzed-text-card">
+  <h4 class="source-panel-heading section-subtitle">Analyzed Text</h4>
+  <blockquote class="source-quote-box analyzed-text">“{{ result.text }}”</blockquote>
+  <div class="source-meta-row meta-row">
+    <div class="meta-item">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/></svg>
+      <span><strong>{{ result.word_count }}</strong> words</span>
+    </div>
+    <div class="meta-item">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+      <span><strong>{{ result.char_count }}</strong> characters</span>
+    </div>
+    {% if result.source_url %}
+      <div class="meta-item">
+        <a href="{{ result.source_url }}" target="_blank" rel="noopener noreferrer" class="link-external-pro link-external">
+          <span>Open Original Source</span>
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</div>
