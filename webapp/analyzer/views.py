@@ -1499,7 +1499,11 @@ def export_report_html(request):
             translate_non_english=translate_non_english,
         )
 
-        html_content = render(request, "analyzer/report.html", {"result": result}).content
+        html_content = render(
+            request,
+            "analyzer/report.html",
+            {"result": result, "include_analytics": False},
+        ).content
         response = HttpResponse(html_content, content_type="text/html; charset=utf-8")
         response["Content-Disposition"] = 'attachment; filename="vader_sentiment_report.html"'
         return response

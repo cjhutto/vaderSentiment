@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 
 import requests
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from bs4 import BeautifulSoup
 
@@ -465,6 +465,26 @@ class BatchCsvTests(TestCase):
 
 
 class AnalyzeViewTests(TestCase):
+    def test_google_analytics_omitted_without_measurement_id(self):
+        response = self.client.get(reverse("analyze"))
+        self.assertNotContains(response, "googletagmanager.com/gtag/js")
+
+    @override_settings(GOOGLE_ANALYTICS_MEASUREMENT_ID="G-TEST123456")
+    def test_google_analytics_included_when_measurement_id_set(self):
+        response = self.client.get(reverse("analyze"))
+        self.assertContains(response, "googletagmanager.com/gtag/js?id=G-TEST123456")
+        self.assertContains(response, "gtag('config', 'G-TEST123456'")
+
+    @override_settings(GOOGLE_ANALYTICS_MEASUREMENT_ID="G-TEST123456")
+    def test_export_report_html_omits_google_analytics(self):
+        response = self.client.post(
+            reverse("export_report_html"),
+            json.dumps({"text": "Excellent speed and wonderful performance! 🚀"}),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "googletagmanager.com/gtag/js")
+
     def test_get_renders_form_and_tabs(self):
         response = self.client.get(reverse("analyze"))
         self.assertEqual(response.status_code, 200)
@@ -688,6 +708,32 @@ class LanguageDetectionUnitTests(TestCase):
         self.assertEqual(res["code"], "ru")
         self.assertEqual(res["name"], "Russian")
 
+    def test_tagalog_filipino_detection(self):
+        res1 = detect_language("putang ina mo")
+        self.assertEqual(res1["code"], "tl")
+        self.assertEqual(res1["name"], "Tagalog / Filipino")
+
+        res2 = detect_language("Napakaganda ng serbisyo at masarap ang pagkain.")
+        self.assertEqual(res2["code"], "tl")
+        self.assertEqual(res2["name"], "Tagalog / Filipino")
+
+    def test_cebuano_bisaya_detection(self):
+        res = detect_language("Pisting yawa bwisit ang serbisyo")
+        self.assertEqual(res["code"], "ceb")
+        self.assertEqual(res["name"], "Cebuano / Bisaya")
+
+    def test_ilocano_detection(self):
+        res = detect_language("Ukinam napakapangit ng produkto")
+        self.assertEqual(res["code"], "ilo")
+        self.assertEqual(res["name"], "Ilocano")
+
+    def test_informal_and_sms_dialect_detection(self):
+        self.assertEqual(detect_language("putaaaaang inaaa mooooo")["code"], "tl")
+        self.assertEqual(detect_language("tngina mo")["code"], "tl")
+        self.assertEqual(detect_language("g@go ka")["code"], "tl")
+        self.assertEqual(detect_language("bwct talaga")["code"], "tl")
+        self.assertEqual(detect_language("pisting ywaaa")["code"], "ceb")
+
 
 class TranslateToEnglishUnitTests(TestCase):
     def test_english_skips_translation(self):
@@ -817,6 +863,78 @@ class ScorePayloadTranslationTests(TestCase):
         self.assertIsNotNone(result["translation"]["warning"])
         self.assertEqual(result["scored_text"], spanish_text)
         self.assertIn("VADER scored the original text directly", result["plain_summary"])
+
+    def test_tagalog_profanity_scoring_negative(self):
+        result = score_payload("putang ina mo", translate_non_english=True)
+        self.assertEqual(result["language"]["code"], "tl")
+        self.assertEqual(result["language"]["name"], "Tagalog / Filipino")
+        self.assertTrue(result["translation"]["used"])
+        self.assertEqual(result["label"], "negative")
+        self.assertLess(result["compound"], -0.5)
+
+    def test_cebuano_profanity_scoring_negative(self):
+        result = score_payload("pisting yawa ka", translate_non_english=True)
+        self.assertEqual(result["language"]["code"], "ceb")
+        self.assertEqual(result["language"]["name"], "Cebuano / Bisaya")
+        self.assertTrue(result["translation"]["used"])
+        self.assertEqual(result["label"], "negative")
+        self.assertLess(result["compound"], -0.5)
+
+    def test_tagalog_positive_review_scoring(self):
+        result = score_payload("Napakaganda ng serbisyo at napakasarap ng pagkain! 😍", translate_non_english=True)
+        self.assertEqual(result["language"]["code"], "tl")
+        self.assertEqual(result["language"]["name"], "Tagalog / Filipino")
+        self.assertTrue(result["translation"]["used"])
+        self.assertEqual(result["label"], "positive")
+        self.assertGreater(result["compound"], 0.6)
+        self.assertEqual(len(result["detected_emojis"]), 1)
+
+    def test_informal_tagalog_scoring(self):
+        res1 = score_payload("putaaaaang inaaa mooooo", translate_non_english=True)
+        self.assertEqual(res1["label"], "negative")
+        self.assertLess(res1["compound"], -0.5)
+
+        res2 = score_payload("g@go ka tarant@do", translate_non_english=True)
+        self.assertEqual(res2["label"], "negative")
+        self.assertLess(res2["compound"], -0.5)
+
+        res3 = score_payload("bwct talaga ang serbisyo", translate_non_english=True)
+        self.assertEqual(res3["label"], "negative")
+        self.assertLess(res3["compound"], -0.3)
+
+        res4 = score_payload("sobrng gandaaa at sarappp 😍", translate_non_english=True)
+        self.assertEqual(res4["label"], "positive")
+        self.assertGreater(res4["compound"], 0.6)
+
+    def test_expanded_philippine_dialect_reviews(self):
+        # Scam / Budol
+        res_budol = score_payload("Nabudol ako dito, wag kayo bibili!", translate_non_english=True)
+        self.assertEqual(res_budol["label"], "negative")
+        self.assertLess(res_budol["compound"], -0.5)
+
+        # Fast Delivery & Friendly Service
+        res_deliv = score_payload("Sobrang bilis ng delivery at napakabait ng staff! 😍", translate_non_english=True)
+        self.assertEqual(res_deliv["label"], "positive")
+        self.assertGreater(res_deliv["compound"], 0.6)
+
+        # Defect & Money Waste
+        res_sira = score_payload("Sira agad ang item, sayang lang pera ko basura!", translate_non_english=True)
+        self.assertEqual(res_sira["label"], "negative")
+        self.assertLess(res_sira["compound"], -0.5)
+
+        # Food & Value
+        res_food = score_payload("Sobrang sarap ng pagkain sulit na sulit ang bayad!", translate_non_english=True)
+        self.assertEqual(res_food["label"], "positive")
+        self.assertGreater(res_food["compound"], 0.6)
+
+        # Bisaya Insult & Compliment
+        res_bis_neg = score_payload("Samok kaayo pisting yawa!", translate_non_english=True)
+        self.assertEqual(res_bis_neg["label"], "negative")
+        self.assertLess(res_bis_neg["compound"], -0.5)
+
+        res_bis_pos = score_payload("Lami kaayo ang pagkaon diri daghang salamat!", translate_non_english=True)
+        self.assertEqual(res_bis_pos["label"], "positive")
+        self.assertGreater(res_bis_pos["compound"], 0.6)
 
 
 class MeaningfulSocialTextTests(TestCase):

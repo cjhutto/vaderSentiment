@@ -60,3 +60,5 @@ webapp/db.sqlite3
 # personal notes and help
 *.notes
 *.help
+.vercel
+.env*

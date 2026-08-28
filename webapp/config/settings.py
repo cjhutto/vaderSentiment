@@ -10,25 +10,39 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+REPO_ROOT = BASE_DIR.parent
+IS_VERCEL = os.environ.get("VERCEL") == "1"
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-z@xe(h3kd^mai6kffhqq7u8bzl^m9n$v(p+8@mm5pe+unc9625'
+SECRET_KEY = os.environ.get(
+    "DJANGO_SECRET_KEY",
+    "django-insecure-z@xe(h3kd^mai6kffhqq7u8bzl^m9n$v(p+8@mm5pe+unc9625",
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DJANGO_DEBUG", "false" if IS_VERCEL else "true").lower() == "true"
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost", ".trycloudflare.com"]
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
+    ".trycloudflare.com",
+    ".vercel.app",
+    "vader-sentiment-rust.vercel.app",
+]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://*.trycloudflare.com",
+    "https://*.vercel.app",
+    "https://vader-sentiment-rust.vercel.app",
 ]
 
 # Application definition
@@ -66,6 +80,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'analyzer.context_processors.analytics',
             ],
         },
     },
@@ -80,9 +95,12 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': '/tmp/db.sqlite3' if IS_VERCEL else BASE_DIR / 'db.sqlite3',
     }
 }
+
+if IS_VERCEL:
+    SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 
 
 # Password validation
@@ -120,8 +138,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Google Analytics 4 (set GOOGLE_ANALYTICS_MEASUREMENT_ID in production, e.g. G-XXXXXXXXXX)
+GOOGLE_ANALYTICS_MEASUREMENT_ID = os.environ.get("GOOGLE_ANALYTICS_MEASUREMENT_ID", "").strip()

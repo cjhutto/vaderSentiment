@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "webapp/config/wsgi.py": {
+      "maxDuration": 60,
+      "includeFiles": "vaderSentiment/**"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+[project]
+name = "vader-sentiment-analyzer"
+version = "0.1.0"
+requires-python = ">=3.9"
+dependencies = [
+  "django>=4.2,<5",
+  "requests>=2.31",
+  "beautifulsoup4>=4.12",
+  "pypdf>=4.0",
+  "pillow>=10.0",
+]

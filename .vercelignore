@@ -1,0 +1,6 @@
+.venv/
+.cursor/
+design-system/
+*.notes
+*.help
+tests/
