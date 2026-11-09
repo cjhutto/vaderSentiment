@@ -245,14 +245,22 @@ class SentimentIntensityAnalyzer(object):
         # convert emojis to their textual descriptions
         text_no_emoji = ""
         prev_space = True
-        for chr in text:
+        for idx, chr in enumerate(text):
             if chr in self.emojis:
                 # get the textual description
                 description = self.emojis[chr]
                 if not prev_space:
                     text_no_emoji += ' '
                 text_no_emoji += description
-                prev_space = False
+                # separate the description from a word or punctuation that
+                # follows directly, so the two do not fuse into one token
+                # (the mirror of the leading space above)
+                next_chr = text[idx + 1] if idx + 1 < len(text) else ''
+                if next_chr and not next_chr.isspace() and next_chr not in self.emojis:
+                    text_no_emoji += ' '
+                    prev_space = True
+                else:
+                    prev_space = False
             else:
                 text_no_emoji += chr
                 prev_space = chr == ' '
